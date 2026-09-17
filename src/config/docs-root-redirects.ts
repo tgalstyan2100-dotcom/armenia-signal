@@ -1,5 +1,5 @@
 import docsConfigJson from '../../docs/docs.json';
-import { WEB_APP_ORIGIN } from './web-origin';
+import { WEB_APP_ORIGIN } from './web-origin.js';
 
 const docsOrigin = new URL(WEB_APP_ORIGIN);
 docsOrigin.hostname = `www.${docsOrigin.hostname}`;
