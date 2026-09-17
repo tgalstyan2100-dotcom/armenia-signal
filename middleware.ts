@@ -1,4 +1,4 @@
-import { acceptQuality, isKnownPublicPagePath, originNotFoundResponse } from './src/config/agent-not-found';
+import { acceptQuality, isKnownPublicPagePath, originNotFoundResponse } from './src/config/agent-not-found.js';
 import {
   DOCS_PUBLIC_ORIGIN,
   DOCS_UPSTREAM_ORIGIN,
@@ -7,8 +7,8 @@ import {
   isDocsHtmlDocumentPath,
   rewriteDocsLocaleHtml,
   shouldTransformDocsUpstreamHtml,
-} from './src/config/docs-locale-seo';
-import { getRootlessDocsDestination } from './src/config/docs-root-redirects';
+} from './src/config/docs-locale-seo.js';
+import { getRootlessDocsDestination } from './src/config/docs-root-redirects.js';
 import agentRequestPolicy from './shared/agent-request-policy.json';
 
 const AGENT_UA = new RegExp(`(?:^|[^a-z0-9-])(?:${agentRequestPolicy.userAgents.join('|')})(?:$|[^a-z0-9-])`, 'i');
