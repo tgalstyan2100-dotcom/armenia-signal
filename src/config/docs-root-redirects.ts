@@ -1,4 +1,4 @@
-import docsConfigJson from '../../docs/docs.json';
+import docsConfigJson from '../../docs/docs.json' with { type: 'json' };
 import { WEB_APP_ORIGIN } from './web-origin.js';
 
 const docsOrigin = new URL(WEB_APP_ORIGIN);
