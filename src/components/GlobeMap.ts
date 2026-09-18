@@ -22,6 +22,7 @@ import { getCachedMilitaryBases, preloadMilitaryBases } from '@/services/militar
 import { NUCLEAR_FACILITIES, SPACEPORTS, ECONOMIC_CENTERS, CRITICAL_MINERALS, UNDERSEA_CABLES } from '@/config/geo-map';
 import { PIPELINES } from '@/config/pipelines';
 import { t } from '@/services/i18n';
+import { getArmeniaMapLayerLabel, getArmeniaMapUi } from '@/config/armenia-map-ui';
 import { SITE_VARIANT } from '@/config/variant';
 import { getGlobeRenderScale, resolveGlobePixelRatio, resolvePerformanceProfile, subscribeGlobeRenderScaleChange, getGlobeTexture, GLOBE_TEXTURE_URLS, subscribeGlobeTextureChange, getGlobeVisualPreset, subscribeGlobeVisualPresetChange, type GlobeRenderScale, type GlobePerformanceProfile, type GlobeVisualPreset } from '@/services/globe-render-settings';
 import {
@@ -1952,12 +1953,13 @@ export class GlobeMap {
   private createControls(): void {
     const el = document.createElement('div');
     el.className = 'map-controls deckgl-controls';
+    const ui = getArmeniaMapUi();
     setTrustedHtml(el, trustedHtml(`
       <span class="globe-beta-badge">BETA</span>
       <div class="zoom-controls">
-        <button class="map-btn zoom-in"    title="Zoom in" aria-label="Zoom in">+</button>
-        <button class="map-btn zoom-out"   title="Zoom out" aria-label="Zoom out">-</button>
-        <button class="map-btn zoom-reset" title="Reset view" aria-label="Reset view">&#8962;</button>
+        <button class="map-btn zoom-in"    title="${escapeHtml(ui.zoomIn)}" aria-label="${escapeHtml(ui.zoomIn)}">+</button>
+        <button class="map-btn zoom-out"   title="${escapeHtml(ui.zoomOut)}" aria-label="${escapeHtml(ui.zoomOut)}">-</button>
+        <button class="map-btn zoom-reset" title="${escapeHtml(ui.resetView)}" aria-label="${escapeHtml(ui.resetView)}">&#8962;</button>
       </div>`, "legacy direct innerHTML migration"));
     this.container.appendChild(el);
     el.addEventListener('click', (e) => {
@@ -1987,9 +1989,10 @@ export class GlobeMap {
   private createLayerToggles(): void {
     const layerDefs = getLayersForVariant((SITE_VARIANT || 'full') as MapVariant, 'globe');
     const authState = getAuthState();
+    const ui = getArmeniaMapUi();
     const layers = layerDefs.map(def => ({
       key: def.key,
-      label: resolveLayerLabel(def, t),
+      label: getArmeniaMapLayerLabel(def.key, resolveLayerLabel(def, t)),
       icon: def.icon,
       premium: def.premium,
       presentation: getPremiumLayerPresentation(def.premium, authState),
@@ -2001,13 +2004,13 @@ export class GlobeMap {
     el.style.top = '10px';
     setTrustedHtml(el, trustedHtml(`
       <div class="toggle-header">
-        <span>${t('components.deckgl.layersTitle')}</span>
+        <span>${escapeHtml(ui.layers)}</span>
         <button class="toggle-collapse">&#9660;</button>
       </div>
-      <input type="text" class="layer-search" placeholder="${t('components.deckgl.layerSearch')}" autocomplete="off" spellcheck="false" />
+      <input type="text" class="layer-search" placeholder="${escapeHtml(ui.searchLayers)}" autocomplete="off" spellcheck="false" />
       <div class="toggle-list" style="max-height:32vh;overflow-y:auto;scrollbar-width:thin;">
         ${layers.map(({ key, label, icon, presentation }) => {
-            const explainLabel = escapeHtml(`Explain ${label} layer`);
+            const explainLabel = escapeHtml(`${ui.explain}: ${label}`);
             const hasExplanation = hasCuratedLayerExplanation(key);
             return `
           <div class="layer-toggle-row" data-layer="${key}">
