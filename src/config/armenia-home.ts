@@ -1,16 +1,7 @@
+import { ARMENIA_SOURCE_REGISTRY } from '@/config/armenia-source-registry';
+import type { ArmeniaSignalDomain, ArmeniaSourceDefinition } from '@/types/armenia-signal';
 import type { NewsItem } from '@/types';
 import type { ArmeniaSectionId } from '@/config/armenia-sections';
-
-const ARMENIA_DOMESTIC_SOURCE_NAMES = new Set([
-  'armenpress',
-  'civilnet',
-  'hetq',
-  'azatutyun',
-  'news.am',
-  'arka',
-  'banks.am',
-  'panorama.am',
-]);
 
 export type ArmeniaSignalCategory = 'economy' | 'security' | 'politics' | 'technology' | 'energy' | 'society' | 'region';
 export type ArmeniaSignalScope = 'armenia' | 'region' | 'world-impact';
@@ -24,6 +15,31 @@ export interface ArmeniaRankedSignal {
   reasons: ArmeniaRelevanceReason[];
   score: number;
 }
+
+const ARMENIA_DOMESTIC_SOURCE_NAMES = new Set(
+  ARMENIA_SOURCE_REGISTRY
+    .filter((source) => source.geography === 'armenia')
+    .flatMap((source) => [source.name, ...(source.aliases ?? [])])
+    .map((name) => name.toLocaleLowerCase()),
+);
+
+const ARMENIA_SOURCE_BY_NAME = new Map<string, ArmeniaSourceDefinition>();
+for (const source of ARMENIA_SOURCE_REGISTRY) {
+  ARMENIA_SOURCE_BY_NAME.set(source.name.toLocaleLowerCase(), source);
+  for (const alias of source.aliases ?? []) ARMENIA_SOURCE_BY_NAME.set(alias.toLocaleLowerCase(), source);
+}
+
+const SOURCE_DOMAIN_FALLBACK: Partial<Record<ArmeniaSignalDomain, ArmeniaSignalCategory>> = {
+  politics: 'politics',
+  economy: 'economy',
+  energy: 'energy',
+  security: 'security',
+  technology: 'technology',
+  society: 'society',
+  infrastructure: 'economy',
+  emergency: 'society',
+  regional: 'region',
+};
 
 const DIRECT_ARMENIA_TERMS = [
   'armenia', 'armenian', 'yerevan', 'gyumri', 'vanadzor', 'syunik', 'gegharkunik', 'tavush', 'shirak',
@@ -82,11 +98,23 @@ function isInsideArmenia(item: NewsItem): boolean {
   return item.lat != null && item.lon != null && item.lat >= 38.8 && item.lat <= 41.4 && item.lon >= 43.4 && item.lon <= 46.7;
 }
 
-function categoryTags(text: string): ArmeniaSignalCategory[] {
+function sourceFallbackCategory(item: NewsItem): ArmeniaSignalCategory | null {
+  const source = ARMENIA_SOURCE_BY_NAME.get(item.source.toLocaleLowerCase());
+  if (!source) return null;
+  for (const domain of source.domains) {
+    const category = SOURCE_DOMAIN_FALLBACK[domain];
+    if (category) return category;
+  }
+  return null;
+}
+
+function categoryTags(item: NewsItem, text: string): ArmeniaSignalCategory[] {
   const tags = (Object.entries(CATEGORY_TERMS) as Array<[Exclude<ArmeniaSignalCategory, 'region'>, readonly string[]]>)
     .filter(([, terms]) => containsAny(text, terms))
     .map(([category]) => category);
-  return tags.length > 0 ? tags : ['region'];
+  if (tags.length > 0) return tags;
+  const fallback = sourceFallbackCategory(item);
+  return fallback ? [fallback] : ['region'];
 }
 
 function primaryCategory(tags: ArmeniaSignalCategory[]): ArmeniaSignalCategory {
@@ -152,7 +180,7 @@ export function rankArmeniaNews(items: readonly NewsItem[], nowMs = Date.now()):
     const text = itemText(item);
     const matched = relevance(item, text);
     if (!matched) continue;
-    const tags = categoryTags(text);
+    const tags = categoryTags(item, text);
     ranked.push({
       item,
       category: primaryCategory(tags),
