@@ -57,6 +57,7 @@ import { getCountryAtCoordinates, getCountryBbox } from '@/services/country-geom
 import type { CountryClickPayload } from './DeckGLMap';
 import { t } from '@/services/i18n';
 import type { ScenarioVisualState } from '@/config/scenario-templates';
+import { getArmeniaMapLayerLabel, getArmeniaMapUi } from '@/config/armenia-map-ui';
 import { setTrustedHtml, trustedHtml } from '@/utils/dom-utils';
 import { renderLayerTruncationBadges } from '@/utils/layer-truncation-badge';
 import {
@@ -463,10 +464,11 @@ export class MapComponent {
   private createControls(): HTMLElement {
     const controls = document.createElement('div');
     controls.className = 'map-controls';
+    const ui = getArmeniaMapUi();
     setTrustedHtml(controls, trustedHtml(`
-      <button class="map-control-btn" data-action="zoom-in" aria-label="Zoom in">+</button>
-      <button class="map-control-btn" data-action="zoom-out" aria-label="Zoom out">−</button>
-      <button class="map-control-btn" data-action="reset" aria-label="Reset rotation">⟲</button>
+      <button class="map-control-btn" data-action="zoom-in" title="${escapeHtml(ui.zoomIn)}" aria-label="${escapeHtml(ui.zoomIn)}">+</button>
+      <button class="map-control-btn" data-action="zoom-out" title="${escapeHtml(ui.zoomOut)}" aria-label="${escapeHtml(ui.zoomOut)}">−</button>
+      <button class="map-control-btn" data-action="reset" title="${escapeHtml(ui.resetView)}" aria-label="${escapeHtml(ui.resetView)}">⟲</button>
     `, "legacy direct innerHTML migration"));
 
     controls.addEventListener('click', (e) => {
@@ -485,17 +487,12 @@ export class MapComponent {
     slider.className = 'time-slider';
     slider.id = 'timeSlider';
 
-    const ranges: { value: TimeRange; label: string }[] = [
-      { value: '1h', label: '1H' },
-      { value: '6h', label: '6H' },
-      { value: '24h', label: '24H' },
-      { value: '48h', label: '48H' },
-      { value: '7d', label: '7D' },
-      { value: 'all', label: 'ALL' },
-    ];
+    const ui = getArmeniaMapUi();
+    const ranges: { value: TimeRange; label: string }[] = (['1h', '6h', '24h', '48h', '7d', 'all'] as TimeRange[])
+      .map((value) => ({ value, label: ui.ranges[value] }));
 
     setTrustedHtml(slider, trustedHtml(`
-      <span class="time-slider-label">TIME RANGE</span>
+      <span class="time-slider-label">${escapeHtml(ui.timeRange)}</span>
       <div class="time-slider-buttons">
         ${ranges
         .map(
@@ -556,7 +553,8 @@ export class MapComponent {
     // (The old `getLayersForVariant(v, 'flat')` lookup dropped ciiChoropleth
     // once it stopped being an SVG layer, regressing its label to the raw key.)
     const def = LAYER_REGISTRY[layer];
-    return def ? resolveLayerLabel(def, t) : String(layer);
+    const fallback = def ? resolveLayerLabel(def, t) : String(layer);
+    return getArmeniaMapLayerLabel(layer, fallback);
   }
 
   private createLayerToggles(): HTMLElement {
