@@ -2132,14 +2132,12 @@ export class DataLoaderManager implements AppModule {
 
   async loadNews(): Promise<void> {
     const generation = this.beginNewsLoad();
-    const armeniaNewsPromise = this.ctx.panelSettings['armenia-home']?.enabled
-      ? import('@/services/armenia-news')
-        .then(({ fetchArmeniaNews }) => fetchArmeniaNews())
-        .catch((error) => {
-          console.warn('[Armenia Signal] Local source load failed:', error);
-          return [] as NewsItem[];
-        })
-      : Promise.resolve([] as NewsItem[]);
+    const armeniaNewsPromise = import('@/services/armenia-news')
+      .then(({ fetchArmeniaNews }) => fetchArmeniaNews())
+      .catch((error) => {
+        console.warn('[Armenia Signal] Local source load failed:', error);
+        return [] as NewsItem[];
+      });
     // Reset happy variant accumulator for fresh pipeline run
     if (SITE_VARIANT === 'happy') {
       this.ctx.happyAllItems = [];
