@@ -1032,6 +1032,7 @@ export class EventHandlerManager implements AppModule {
     this.scheduleMissionDataRefresh();
     this.syncUrlState();
     this.updateArmeniaSectionUi(sectionId);
+    window.dispatchEvent(new CustomEvent('armenia:section-change', { detail: { sectionId } }));
     if (sectionId === 'map') document.getElementById('mapSection')?.scrollIntoView({ block: 'start', behavior: silent ? 'auto' : 'smooth' });
     if (!silent) {
       const storedLanguage = loadFromStorage<ArmeniaLanguage>(ARMENIA_LANGUAGE_STORAGE_KEY, 'hy');
