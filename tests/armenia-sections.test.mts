@@ -25,6 +25,16 @@ describe('Armenia Signal editorial sections', () => {
     const applied = applyArmeniaSectionToState('home', getInitialPanelSettingsForVariant('full'), DEFAULT_MAP_LAYERS);
     assert.equal(applied.panelSettings['armenia-home']?.enabled, true);
   });
+  it('replaces unrelated global live television in every Armenia section', () => {
+    const current = getInitialPanelSettingsForVariant('full');
+    for (const section of ARMENIA_SECTIONS) {
+      assert.ok(section.panels.includes('armenia-home'), `${section.id} should include Armenia signals`);
+      assert.equal(section.panels.includes('live-news'), false, `${section.id} should not include global live TV`);
+      const applied = applyArmeniaSectionToState(section.id, current, DEFAULT_MAP_LAYERS);
+      assert.equal(applied.panelSettings['armenia-home']?.enabled, true);
+      assert.equal(applied.panelSettings['live-news']?.enabled, false);
+    }
+  });
   it('cross-tags cyber signals into Security and Technology', () => {
     const current = getInitialPanelSettingsForVariant('full');
     assert.equal(applyArmeniaSectionToState('security', current).mapLayers.cyberThreats, true);
