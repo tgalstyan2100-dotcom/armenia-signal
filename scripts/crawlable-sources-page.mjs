@@ -110,6 +110,14 @@ const SOURCE_DOMAIN_MATCHERS = [
 // Keep ambiguous structured providers explicit so a new unmatched provider
 // fails the build instead of silently becoming "geopolitics".
 const SOURCE_DOMAIN_OVERRIDES = new Map([
+  ['arka.am', 'news'],
+  ['armenpress.am', 'news'],
+  ['azatutyun.am', 'news'],
+  ['banks.am', 'finance'],
+  ['civilnet.am', 'news'],
+  ['hetq.am', 'news'],
+  ['news.am', 'news'],
+  ['panorama.am', 'news'],
   ['Alberta Emergency Alert', 'environment'],
   ['B.C. Evacuation Orders and Alerts', 'environment'],
   ['SaskAlert', 'environment'],
@@ -188,6 +196,14 @@ const SOURCE_DOMAIN_OVERRIDES = new Map([
 // Keep the hostname as the traceability link, but never make it do double duty
 // as the visible provider title.
 const SOURCE_NAME_OVERRIDES = new Map([
+  ['arka.am', 'ARKA'],
+  ['armenpress.am', 'Armenpress'],
+  ['azatutyun.am', 'Azatutyun'],
+  ['banks.am', 'Banks.am'],
+  ['civilnet.am', 'CivilNet'],
+  ['hetq.am', 'Hetq'],
+  ['news.am', 'NEWS.am'],
+  ['panorama.am', 'Panorama.am'],
   ['acleddata.com', 'ACLED'],
   ['adsb.lol', 'ADSB.lol'],
   ['aerotime.aero', 'AeroTime'],
