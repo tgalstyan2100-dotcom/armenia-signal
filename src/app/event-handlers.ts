@@ -990,6 +990,7 @@ export class EventHandlerManager implements AppModule {
       const select = document.getElementById(id) as HTMLSelectElement | null;
       if (select) { select.value = language; select.setAttribute('aria-label', ARMENIA_UI.language[language]); }
     });
+    window.dispatchEvent(new CustomEvent('armenia:language-change', { detail: { language } }));
     const tabLabels = [getArmeniaSection('home').shortLabel[language], getArmeniaSection('map').shortLabel[language], ARMENIA_UI.search[language], ARMENIA_UI.alerts[language], ARMENIA_UI.more[language]];
     document.querySelectorAll<HTMLElement>('#mobileTabBar .mobile-tab').forEach((tab, index) => {
       const label = tab.querySelector<HTMLElement>('span:last-child');
