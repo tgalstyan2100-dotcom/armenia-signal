@@ -1820,6 +1820,20 @@
       ]
     },
     {
+      "host": "banks.am",
+      "provider": "banks.am",
+      "kind": "structured",
+      "observed": true,
+      "license": "Provider terms for this upstream API/dataset; verify before redistribution",
+      "attribution": "Credit banks.am and link to the original upstream API/dataset.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "src/config/armenia-feeds.ts"
+        }
+      ]
+    },
+    {
       "host": "basemaps.cartocdn.com",
       "provider": "basemaps.cartocdn.com",
       "kind": "structured",
@@ -4863,6 +4877,20 @@
       ]
     },
     {
+      "host": "hetq.am",
+      "provider": "hetq.am",
+      "kind": "structured",
+      "observed": true,
+      "license": "Provider terms for this upstream API/dataset; verify before redistribution",
+      "attribution": "Credit hetq.am and link to the original upstream API/dataset.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "src/config/armenia-feeds.ts"
+        }
+      ]
+    },
+    {
       "host": "hiiraan.com",
       "provider": "hiiraan.com",
       "kind": "feed",
@@ -6297,6 +6325,20 @@
       "references": [
         {
           "path": "src/services/live-channels.ts"
+        }
+      ]
+    },
+    {
+      "host": "news.am",
+      "provider": "news.am",
+      "kind": "structured",
+      "observed": true,
+      "license": "Provider terms for this upstream API/dataset; verify before redistribution",
+      "attribution": "Credit news.am and link to the original upstream API/dataset.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "src/config/armenia-feeds.ts"
         }
       ]
     },
