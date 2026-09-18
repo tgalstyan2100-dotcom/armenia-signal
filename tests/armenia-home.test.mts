@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { rankArmeniaNews } from '../src/config/armenia-home.ts';
+import { filterArmeniaSignalsForSection, rankArmeniaNews } from '../src/config/armenia-home.ts';
 import type { NewsItem } from '../src/types/index.ts';
 
 const NOW = new Date('2026-09-18T08:00:00Z').getTime();
@@ -59,5 +59,23 @@ describe('Armenia home relevance', () => {
       news('Armenia opens a new technology investment program'),
     ], NOW);
     assert.equal(ranked[0]?.scope, 'armenia');
+  });
+
+  it('treats the dedicated Armenian publisher floor as direct coverage', () => {
+    const [signal] = rankArmeniaNews([news('Կառավարությունը հաստատել է նոր ներդրումային ծրագիրը', { source: 'Hetq' })], NOW);
+    assert.ok(signal);
+    assert.equal(signal.scope, 'armenia');
+    assert.ok(signal.reasons.includes('armenia-source'));
+  });
+
+  it('focuses menu sections without leaking unrelated global headlines', () => {
+    const ranked = rankArmeniaNews([
+      news('Armenian government reports cyber attack and data breach'),
+      news('Central Bank of Armenia keeps the dram policy rate unchanged'),
+      news('Armenian parliament opens diplomatic negotiations'),
+    ], NOW);
+    assert.deepEqual(filterArmeniaSignalsForSection(ranked, 'economy').map((signal) => signal.category), ['economy']);
+    assert.deepEqual(filterArmeniaSignalsForSection(ranked, 'technology').map((signal) => signal.category), ['technology']);
+    assert.ok(filterArmeniaSignalsForSection(ranked, 'politics').every((signal) => signal.tags.includes('politics')));
   });
 });
