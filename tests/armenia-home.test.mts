@@ -61,10 +61,18 @@ describe('Armenia home relevance', () => {
     assert.equal(ranked[0]?.scope, 'armenia');
   });
 
-  it('treats the dedicated Armenian publisher floor as direct coverage', () => {
+  it('treats registered Armenian publishers as direct coverage', () => {
     const [signal] = rankArmeniaNews([news('Կառավարությունը հաստատել է նոր ներդրումային ծրագիրը', { source: 'Hetq' })], NOW);
     assert.ok(signal);
     assert.equal(signal.scope, 'armenia');
+    assert.ok(signal.reasons.includes('armenia-source'));
+  });
+
+  it('treats registered Armenian official sources as direct coverage and uses their domain as a category fallback', () => {
+    const [signal] = rankArmeniaNews([news('Պաշտոնական հաղորդագրություն', { source: 'Ministry of Defence of Armenia' })], NOW);
+    assert.ok(signal);
+    assert.equal(signal.scope, 'armenia');
+    assert.equal(signal.category, 'security');
     assert.ok(signal.reasons.includes('armenia-source'));
   });
 
