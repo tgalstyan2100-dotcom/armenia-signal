@@ -3,7 +3,7 @@
 @import './route-explorer.css';
 
 /* ============================================================
-   Theme Colors â€” overridden by [data-theme="light"] below
+   Theme Colors \2014  overridden by [data-theme="light"] below
    ============================================================ */
 :root {
   /* Backgrounds */
@@ -24,7 +24,7 @@
   --text-dim: #888;
   --text-muted: #838383; /* was #666 (3.2:1 on --surface); AA 4.9:1 */
   --text-faint: #7f7f7f; /* was #555 (2.5:1); AA 4.6:1 */
-  --text-ghost: #666; /* was #444 (1.9:1); 3.2:1 â€” decorative/large text only, never body copy */
+  --text-ghost: #666; /* was #444 (1.9:1); 3.2:1 \2014  decorative/large text only, never body copy */
   --accent: #fff;
 
   /* Overlays & shadows */
@@ -77,7 +77,7 @@
 }
 
 /* ============================================================
-   Semantic Colors â€” dark-mode defaults, light overrides below
+   Semantic Colors \2014  dark-mode defaults, light overrides below
    ============================================================ */
 :root {
   /* Severity levels */
@@ -97,7 +97,7 @@
   --threat-info: #3b82f6;
 
   /* Plan-card billing tones (#7315). Dark hexes match the threat scale
-     (unknown is a dedicated grey â€” the scale has no grey rung). Light
+     (unknown is a dedicated grey \2014  the scale has no grey rung). Light
      overrides below raise every tone to WCAG AA on --bg / --surface. */
   --billing-tone-active: #22c55e;
   --billing-tone-attention: #eab308;
@@ -120,7 +120,7 @@
   /* Legacy color aliases (used by existing var() references) */
   --red: #ff4444;
   /* Darker red for white-text "active/live" pills: #fff on --red is only
-     3.4:1, on --red-strong it clears WCAG AA (â‰ˆ5:1). Theme-independent (the
+     3.4:1, on --red-strong it clears WCAG AA (\2248 5:1). Theme-independent (the
      pill is red in both themes). */
   --red-strong: #d62b2b;
   --green: #44ff88;
@@ -128,11 +128,11 @@
 }
 
 /* ============================================================
-   Light Theme â€” overrides theme colors AND semantic colors
+   Light Theme \2014  overrides theme colors AND semantic colors
    Bright/neon dark-mode colors need darker variants for light backgrounds
    ============================================================ */
 [data-theme="light"] {
-  /* Semantic color overrides â€” darker variants for light backgrounds */
+  /* Semantic color overrides \2014  darker variants for light backgrounds */
   --semantic-high: #ea580c;
   /* Tailwind orange-600 (was #ff8800, 2.27:1) */
   --semantic-elevated: #d97706;
@@ -150,9 +150,9 @@
   --billing-tone-active: #15803d;
   /* green-700; was #22c55e 2.16:1 on --bg */
   --billing-tone-attention: #a16207;
-  /* yellow-700; was #eab308 1.82:1 â€” yellow-600 #ca8a04 is still 2.79:1 */
+  /* yellow-700; was #eab308 1.82:1 \2014  yellow-600 #ca8a04 is still 2.79:1 */
   --billing-tone-ending: #2563eb;
-  /* blue-600; was #3b82f6 3.49:1 â€” sky-600 #0284c7 is still 3.89:1 */
+  /* blue-600; was #3b82f6 3.49:1 \2014  sky-600 #0284c7 is still 3.89:1 */
   --billing-tone-ended: #b91c1c;
   /* red-700; was #ef4444 3.57:1 */
   --billing-tone-unknown: #4b5563;
@@ -190,7 +190,7 @@
   --text-dim: #6b6b6b;
   --text-muted: #6f6f6f; /* was #767676 (4.3:1 vs --bg); AA 4.8:1 */
   --text-faint: #727272; /* was #aaa (2.2:1); AA 4.6:1 */
-  --text-ghost: #8e8e8e; /* was #bbb (1.8:1); 3.1:1 â€” decorative/large text only, never body copy */
+  --text-ghost: #8e8e8e; /* was #bbb (1.8:1); 3.1:1 \2014  decorative/large text only, never body copy */
   --accent: #111111;
 
   /* Overlays & shadows */
@@ -255,7 +255,7 @@ body.animations-paused *::after {
 }
 
 /* ============================================================
-   Theme Transition â€” smooth 200ms animation for theme switches
+   Theme Transition \2014  smooth 200ms animation for theme switches
    ============================================================ */
 *,
 *::before,
@@ -1111,7 +1111,7 @@ canvas,
   color: var(--text);
 }
 
-/* Progressive header disclosure â€” keep the core right-side actions (Search,
+/* Progressive header disclosure \2014  keep the core right-side actions (Search,
    settings, and especially the Sign In / Create account cluster) fully on
    screen as usable width shrinks: small laptops, split-screen, OS scaling
    (1920px @ 150% = ~1280px CSS), and browsers with a vertical tab strip.
@@ -1652,7 +1652,7 @@ canvas,
   background: var(--green-dim);
 }
 
-/* Hidden by default â€” shown only inside 768px media query */
+/* Hidden by default \2014  shown only inside 768px media query */
 .map-collapse-btn {
   display: none;
 }
@@ -1741,14 +1741,14 @@ canvas,
 .site-footer-copy {
   font-family: var(--font-mono, monospace);
   font-size: calc(10px * var(--wm-panel-effective-scale, 1));
-  /* No opacity: 0.6 fade â€” it dropped --text-dim (#888) to an effective
+  /* No opacity: 0.6 fade \2014  it dropped --text-dim (#888) to an effective
      #5a5a5a on the #141414 footer (2.67:1). At full strength #888 clears
-     4.5:1 (â‰ˆ5.2:1) for WCAG AA, matching the footer nav links. */
+     4.5:1 (\2248 5.2:1) for WCAG AA, matching the footer nav links. */
   color: var(--text-dim);
 }
 
 /* #7085: digest coverage status row, mounted into the site footer by
-   StatusPanel. Text-only state disclosure â€” same muted mono treatment as the
+   StatusPanel. Text-only state disclosure \2014  same muted mono treatment as the
    footer copy, which already clears WCAG AA on this surface. */
 .site-footer .status-panel-container {
   flex-basis: 100%;
@@ -1785,7 +1785,7 @@ canvas,
 
   /* #app is a fixed-viewport flex column and .main-content scrolls internally,
      so .site-footer is pinned to the viewport bottom and its contents are
-     LCP-eligible at EVERY width â€” desktop included. What differs is only the
+     LCP-eligible at EVERY width \2014  desktop included. What differs is only the
      competition: at 1440x900 the row measures ~29,400px2 against .map-section's
      ~607,000px2 and never wins, but collapsing the footer on mobile left the
      row facing a 12,302px2 shell skeleton, which its 139 characters of wrapped
@@ -1793,7 +1793,7 @@ canvas,
      digest load, LCP then waited on a network round trip: field p75 for mobile
      /dashboard went 1137ms to 2357ms across the three days after #7267, and the
      throttled lab check measured a 13.3s render delay against a 271ms baseline.
-     Do not read this as "desktop is safe because the footer is out of view" â€”
+     Do not read this as "desktop is safe because the footer is out of view" \2014 
      it is in view, and shrinking the desktop first-paint candidate would
      regress it the same way. e2e/dashboard-lcp-attribution.spec.ts pins the
      invariant on both viewports for that reason.
@@ -1899,7 +1899,7 @@ canvas,
 }
 
 /* #5332: eager always-full panels grow their grid row when populated content
-   replaces the loading state â€” rows are minmax(--dashboard-panel-row-min,
+   replaces the loading state \2014  rows are minmax(--dashboard-panel-row-min,
    --dashboard-panel-row-max) sized from the panel's intrinsic content height,
    so the growth shoves every row below (field: div.panel shift p75 0.244 on
    9% of desktop views; the dominant remaining desktop CLS mechanism, #4580).
@@ -1920,8 +1920,8 @@ canvas,
   height: var(--dashboard-panel-row-max);
 }
 
-/* Offenders that are two-row by default â€” span-2 defaults and
-   the .panel-wide live-news panel â€” get the populated two-row max (2 rows +
+/* Offenders that are two-row by default \2014  span-2 defaults and
+   the .panel-wide live-news panel \2014  get the populated two-row max (2 rows +
    gap) so its footprint is identical loading vs populated, INCLUDING the
    deferred-shell phase (the shell carries the same classes, so shell->panel
    swap is shift-free). The pins apply to NATURAL footprints only: user-resized
@@ -1995,7 +1995,7 @@ canvas,
 }
 
 .panel-resize-handle::after {
-  content: 'â‹¯';
+  content: '\22EF ';
   position: absolute;
   bottom: 2px;
   left: 50%;
@@ -2032,7 +2032,7 @@ canvas,
 }
 
 .panel-col-resize-handle::after {
-  content: 'â‹®';
+  content: '\22EE ';
   position: absolute;
   right: 3px;
   top: 50%;
@@ -2441,7 +2441,7 @@ body.panel-resize-active iframe {
   }
 }
 
-/* ---- Collapse (â–¾) button on panels ---- */
+/* ---- Collapse (\25BE ) button on panels ---- */
 .panel-header .panel-collapse-btn {
   font-size: calc(12px * var(--wm-panel-effective-scale, 1));
   opacity: 0;
@@ -2918,7 +2918,7 @@ body.panel-resize-active iframe {
   cursor: grabbing;
 }
 
-/* Live News â€“ Channel settings button (same style as webcam view buttons) */
+/* Live News \2013  Channel settings button (same style as webcam view buttons) */
 .live-news-settings-btn {
   padding: 4px 8px;
   background: transparent;
@@ -3611,7 +3611,7 @@ body.panel-resize-active iframe {
 .live-media-shell .offline-retry:hover,
 .webcam-preview-play:hover {
   /* White (#fff, from the base rule) on --red is 3.41:1; --red-strong clears
-     AA (â‰ˆ5:1). axe doesn't audit :hover, but this is the same defect class. */
+     AA (\2248 5:1). axe doesn't audit :hover, but this is the same defect class. */
   background: var(--red-strong);
   border-color: var(--red-strong);
 }
@@ -4224,7 +4224,7 @@ body.live-news-fullscreen-active .panels-grid > *:not(.live-news-fullscreen) {
   }
 }
 
-/* â”€â”€ Pinned Webcams Panel â”€â”€ */
+/* \2500 \2500  Pinned Webcams Panel \2500 \2500  */
 .pinned-webcams-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -8510,7 +8510,7 @@ a.prediction-link:hover {
   gap: 10px;
 }
 
-/* Pro Activation Interstitial (day-0 onboarding) â€” a larger, scrollable
+/* Pro Activation Interstitial (day-0 onboarding) \2014  a larger, scrollable
    variant of .modal-overlay/.modal. Themes via the shared CSS variables. */
 .pro-activation-overlay {
   z-index: 10000; /* above the standard 9999 modal layer */
@@ -10336,7 +10336,7 @@ a.prediction-link:hover {
   cursor: progress;
 }
 
-/* Locked export menu (plan 2026-07-25-001, U5) â€” one CTA row replaces the
+/* Locked export menu (plan 2026-07-25-001, U5) \2014  one CTA row replaces the
    format options. Mirrors .panel-locked-state, sized for a header popover. */
 .export-locked-state {
   display: flex;
@@ -13095,7 +13095,7 @@ a.prediction-link:hover {
   --flight-color: var(--semantic-critical);
 }
 
-/* #3707: no telemetry â€” render the popup header in a neutral grey so users
+/* #3707: no telemetry \2014  render the popup header in a neutral grey so users
    don't read the airport as healthy. */
 .popup-header.flight.unknown {
   --flight-color: var(--text-muted, #9ca3af);
@@ -13857,7 +13857,7 @@ a.prediction-link:hover {
 }
 
 .panel-locked-features li::before {
-  content: "â€” ";
+  content: "\2014  ";
   color: #d4a843;
 }
 
@@ -13913,7 +13913,7 @@ a.prediction-link:hover {
  * "shown/total" for layers the globe's marker budget is trimming (#5368).
  * Muted and right-aligned: it reports a limit, it is not a call to action.
  */
-/* #7112: the marker-budget disclosure for maps with no layer-toggle rail â€”
+/* #7112: the marker-budget disclosure for maps with no layer-toggle rail \2014 
    `chrome: false` embeds. The per-layer `shown/total` badge needs a toggle row to
    sit on; this states the same fact for the whole overlay when no row exists.
    Informational only: pointer-events stay on so the title tooltip works, but it
@@ -14038,7 +14038,7 @@ a.prediction-link:hover {
   border-left-color: var(--accent);
 }
 
-/* Search result highlight â€” glowing border pulse */
+/* Search result highlight \2014  glowing border pulse */
 .search-highlight,
 .flash-highlight {
   position: relative;
@@ -14109,7 +14109,7 @@ a.prediction-link:hover {
    own overflow (overflow-y:auto, overflow-x computes to auto), so scrolling content
    stays contained; only the thin header/padding band is briefly unclipped. contain
    is relaxed to layout (drops paint/clip) to preserve layout isolation without
-   clipping. The glow itself animates opacity only â€” these overrides add no
+   clipping. The glow itself animates opacity only \2014  these overrides add no
    animation to the host. */
 .panel.flash-new,
 .panel.search-highlight,
@@ -14187,7 +14187,7 @@ a.prediction-link:hover {
   display: flex;
 }
 
-/* Non-blocking confirm dialog (#4559) â€” replaces native confirm(). Sits above
+/* Non-blocking confirm dialog (#4559) \2014  replaces native confirm(). Sits above
    the settings modal; mirrors the mobile-warning overlay tokens. */
 .confirm-dialog-overlay {
   position: fixed;
@@ -14978,7 +14978,7 @@ a.prediction-link:hover {
    Mobile Touch Optimization
    ========================================================================== */
 
-/* Narrow viewport only â€” keep 768 in sync with MOBILE_BREAKPOINT_PX in src/utils/index.ts */
+/* Narrow viewport only \2014  keep 768 in sync with MOBILE_BREAKPOINT_PX in src/utils/index.ts */
 @media (max-width: 768px) {
   /* Expand touch targets for all map markers using ::before pseudo-element */
   /* This creates an invisible touch area around small markers */
@@ -15094,7 +15094,7 @@ a.prediction-link:hover {
 
   /*
    * On mobile the grid is a single-column flexbox, so grid-row/column spans and
-   * .panel-wide are inert â€” every real panel renders within the 250-500px band
+   * .panel-wide are inert \2014  every real panel renders within the 250-500px band
    * above. Override the desktop span-based shell reservations (404/600/800px) so
    * the deferred placeholder reserves the same floor the real mobile panel uses,
    * otherwise tall/wide shells would shrink on mount and reintroduce CLS.
@@ -15128,7 +15128,7 @@ a.prediction-link:hover {
     max-height: 100dvh !important;
   }
 
-  /* Collapsed map on mobile â€” higher specificity overrides .map-section above */
+  /* Collapsed map on mobile \2014  higher specificity overrides .map-section above */
   .main-content .map-section.collapsed {
     height: auto !important;
     min-height: 0 !important;
@@ -15136,7 +15136,7 @@ a.prediction-link:hover {
   }
 
   /* :not(.live-news-fullscreen): entering fullscreen from a collapsed map
-     must still show the map â€” fullscreen wins over collapse. */
+     must still show the map \2014  fullscreen wins over collapse. */
   .main-content .map-section.collapsed:not(.live-news-fullscreen) .map-container,
   .main-content .map-section.collapsed:not(.live-news-fullscreen) .map-resize-handle,
   .main-content .map-section.collapsed:not(.live-news-fullscreen) .map-controls,
@@ -15145,7 +15145,7 @@ a.prediction-link:hover {
     display: none;
   }
 
-  /* Map collapse toggle button â€” mobile only */
+  /* Map collapse toggle button \2014  mobile only */
   .map-collapse-btn {
     display: inline-flex;
     align-items: center;
@@ -15449,7 +15449,7 @@ a.prediction-link:hover {
 }
 
 .hotspot-gdelt-header::before {
-  content: 'ðŸ“¡';
+  content: '\1F4E1 ';
   font-size: calc(12px * var(--wm-panel-effective-scale, 1));
 }
 
@@ -15604,7 +15604,7 @@ a.prediction-link:hover {
   cursor: help;
 }
 
-/* U6 â€” CIIPanel followed-countries pin-to-top section labels.
+/* U6 \2014  CIIPanel followed-countries pin-to-top section labels.
  *
  * Inserted between the followed-group and the unfollowed-group when BOTH
  * are non-empty (zero-followed and all-followed cases skip the labels so
@@ -18049,7 +18049,7 @@ a.prediction-link:hover {
 }
 
 /* Service Status Panel */
-/* â”€â”€ Internet Disruptions Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* \2500 \2500  Internet Disruptions Panel \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500  */
 .id-tabs {
   display: flex;
   gap: 2px;
@@ -18390,7 +18390,7 @@ a.prediction-link:hover {
   height: 100%;
   overflow: hidden;
   /* Prevent browser from intercepting touch gestures (pinch-zoom, pan)
-     so MapLibre/deck.gl can handle them directly â€” fixes Android pinch-zoom */
+     so MapLibre/deck.gl can handle them directly \2014  fixes Android pinch-zoom */
   touch-action: none;
 }
 
@@ -18667,7 +18667,7 @@ a.prediction-link:hover {
 }
 
 .deckgl-layer-toggles .layer-toggle.zoom-hidden::after {
-  content: 'ðŸ”+';
+  content: '\1F50D +';
   position: absolute;
   top: -4px;
   right: 2px;
@@ -18697,7 +18697,7 @@ a.prediction-link:hover {
 }
 
 .deckgl-layer-toggles .layer-toggle input[type="checkbox"]:checked::after {
-  content: 'âœ“';
+  content: '\2713 ';
   position: absolute;
   top: 50%;
   left: 50%;
@@ -20286,7 +20286,7 @@ a.prediction-link:hover {
   color: var(--green);
 }
 
-/* Coverage presets (#5956) â€” one-click theater source sets in Sources settings.
+/* Coverage presets (#5956) \2014  one-click theater source sets in Sources settings.
    Chips compose with .unified-settings-region-pill; only the deltas live here. */
 .unified-settings-presets {
   display: flex;
@@ -20409,7 +20409,7 @@ a.prediction-link:hover {
   padding: 4px 14px 10px;
 }
 
-/* â”€â”€ Cloud Sync status â”€â”€ */
+/* \2500 \2500  Cloud Sync status \2500 \2500  */
 
 .wm-sync-status-row {
   display: flex;
@@ -20799,7 +20799,7 @@ a.prediction-link:hover {
   margin-top: 4px;
 }
 
-/* â”€â”€ Import modal â”€â”€ */
+/* \2500 \2500  Import modal \2500 \2500  */
 
 .fw-import-modal-backdrop {
   position: fixed;
@@ -21294,7 +21294,7 @@ body.has-breaking-alert .panels-grid {
 .posture-emoji-key summary::-webkit-details-marker { display: none; }
 
 .posture-emoji-key summary::after {
-  content: 'â–¸';
+  content: '\25B8 ';
   margin-left: auto;
   transition: transform 0.2s;
   font-size: calc(10px * var(--wm-panel-effective-scale, 1));
@@ -23287,7 +23287,7 @@ body.has-breaking-alert .panels-grid {
 }
 
 /* ============================================================
-   Community Discussion Widget â€” Floating Pill
+   Community Discussion Widget \2014  Floating Pill
    ============================================================ */
 .community-widget {
   position: fixed;
@@ -23447,7 +23447,7 @@ body.has-breaking-alert .panels-grid {
   color: var(--text-dim, #888);
 }
 
-/* â”€â”€ Ultra-wide layout: map left, panels beside it â”€â”€ */
+/* \2500 \2500  Ultra-wide layout: map left, panels beside it \2500 \2500  */
 .map-width-resize-handle {
   display: none;
   width: 6px;
@@ -23497,7 +23497,7 @@ body.map-width-resizing {
   display: none;
 }
 
-/* 900px mirrors SPLIT_LAYOUT_MIN_WIDTH (src/app/split-layout.ts) â€” one
+/* 900px mirrors SPLIT_LAYOUT_MIN_WIDTH (src/app/split-layout.ts) \2014  one
    threshold for web and desktop since #6417 (the Tauri window minimum width
    keeps the desktop app above it, so this block covers both). The map track
    pins both pixel floors: 220px = MAP_COL_MIN_PX and 306px = PANELS_COL_MIN_PX
@@ -24010,7 +24010,7 @@ body.map-width-resizing {
   color: var(--bg);
 }
 
-/* â”€â”€â”€ Globe Map Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* \2500 \2500 \2500  Globe Map Styles \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500  */
 
 .globe-mode {
   background: #000 !important;
@@ -24023,7 +24023,7 @@ body.map-width-resizing {
   100% { transform: scale(2.5); opacity: 0; }
 }
 
-/* â”€â”€â”€ Custom AI Widgets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* \2500 \2500 \2500  Custom AI Widgets \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500  */
 
 .ai-widget-block {
   border: 1px dashed color-mix(in srgb, var(--accent) 55%, var(--border));
@@ -24184,7 +24184,7 @@ body.map-width-resizing {
   position: relative;
 }
 
-/* â”€â”€â”€ Widget Chat Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* \2500 \2500 \2500  Widget Chat Modal \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500  */
 
 .widget-chat-modal {
   width: min(1120px, 96vw);
@@ -24548,7 +24548,7 @@ body.map-width-resizing {
   100% { background-position: -200% 0; }
 }
 
-/* â”€â”€ Auth Modal â”€â”€ */
+/* \2500 \2500  Auth Modal \2500 \2500  */
 .auth-modal-content {
   max-width: 420px;
   width: 90%;
@@ -24648,7 +24648,7 @@ body.map-width-resizing {
   color: var(--text-secondary);
 }
 
-/* â”€â”€ Auth Header Widget â”€â”€ */
+/* \2500 \2500  Auth Header Widget \2500 \2500  */
 .auth-header-widget {
   display: flex;
   align-items: center;
@@ -24970,7 +24970,7 @@ body.map-width-resizing {
   }
 }
 
-/* â”€â”€ MCP Connect Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* \2500 \2500  MCP Connect Modal \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500  */
 .mcp-connect-modal {
   width: min(560px, 96vw);
   max-height: 88vh;
@@ -25180,7 +25180,7 @@ body.map-width-resizing {
   color: var(--text-dim);
 }
 
-/* â”€â”€ MCP Data Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* \2500 \2500  MCP Data Panel \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500  */
 .mcp-panel-meta {
   padding: 6px 10px;
   font-size: calc(10px * var(--wm-panel-effective-scale, 1));
@@ -25259,7 +25259,7 @@ body.map-width-resizing {
   flex: 1;
 }
 
-/* â”€â”€ MCP Presets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* \2500 \2500  MCP Presets \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500  */
 .mcp-presets-section {
   display: flex;
   flex-direction: column;
@@ -25573,7 +25573,7 @@ body.map-width-resizing {
   font-variant-numeric: tabular-nums;
 }
 
-/* â”€â”€ Consumer Prices Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* \2500 \2500  Consumer Prices Panel \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500  */
 .consumer-prices-panel {
   display: flex;
   flex-direction: column;
@@ -25723,8 +25723,8 @@ body.map-width-resizing {
 }
 
 .cp-col-header { cursor: pointer; }
-.cp-col-header--up::after   { content: ' â†‘'; }
-.cp-col-header--down::after { content: ' â†“'; }
+.cp-col-header--up::after   { content: ' \2191 '; }
+.cp-col-header--down::after { content: ' \2193 '; }
 
 .cp-cat-row { cursor: pointer; }
 .cp-cat-row:hover { background: var(--overlay-subtle); }
@@ -25887,7 +25887,7 @@ body.map-width-resizing {
   padding: 8px 0 4px;
 }
 
-/* World tab â€” all-countries IMF inflation table */
+/* World tab \2014  all-countries IMF inflation table */
 .cp-world-controls {
   display: flex;
   align-items: center;
@@ -25946,7 +25946,7 @@ body.map-width-resizing {
 .cp-fresh--stale   { color: #f87171; }
 .cp-fresh--unknown { color: var(--text-muted); }
 
-/* â”€â”€ Grocery Basket Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* \2500 \2500  Grocery Basket Panel \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500  */
 .gb-wrapper {
   display: flex;
   flex-direction: column;
@@ -26055,7 +26055,7 @@ body.map-width-resizing {
 .fao-base-note { font-size: calc(0.6rem * var(--wm-panel-effective-scale, 1)); opacity: 0.35; padding: 2px 12px 6px; text-align: right; }
 
 
-/* â”€â”€ Risk Score Badge on News Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* \2500 \2500  Risk Score Badge on News Cards \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500  */
 .risk-score-badge {
   font-size: calc(9px * var(--wm-panel-effective-scale, 1));
   font-family: var(--font-mono);
@@ -26092,7 +26092,7 @@ body.map-width-resizing {
   background: color-mix(in srgb, var(--red, #f87171) 12%, transparent);
 }
 
-/* â”€â”€ Structured Intel Brief Sections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* \2500 \2500  Structured Intel Brief Sections \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500  */
 .brief-section {
   margin-bottom: 12px;
 }
@@ -26118,7 +26118,7 @@ body.map-width-resizing {
 }
 
 .brief-bullet::before {
-  content: 'â€¢';
+  content: '\2022 ';
   position: absolute;
   left: 2px;
   color: var(--text-dim);
@@ -26198,7 +26198,7 @@ body.map-width-resizing {
   opacity: 0.7;
 }
 
-/* â”€â”€ WM Analyst Chat Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* \2500 \2500  WM Analyst Chat Panel \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500  */
 .chat-analyst-wrapper {
   display: flex;
   flex-direction: column;
@@ -26507,7 +26507,7 @@ body.map-width-resizing {
   background: color-mix(in srgb, var(--yellow, #eab308) 10%, transparent);
 }
 
-/* â”€â”€ Payment / Upgrade UI â”€â”€ */
+/* \2500 \2500  Payment / Upgrade UI \2500 \2500  */
 .upgrade-pro-section {
   margin-top: 16px;
   padding: 16px;
@@ -27307,11 +27307,11 @@ body.map-width-resizing {
  * family, same micro-padding scale.
  *
  * Reuses the existing `@keyframes spin` (defined elsewhere in this file).
- * Empty hosts (feature flag off â†’ handle.html === '') stay zero-impact via
+ * Empty hosts (feature flag off \2192  handle.html === '') stay zero-impact via
  * `:not(:empty)`-gated layout rules.
  * ------------------------------------------------------------------------ */
 
-/* Base button â€” reset + flex centring + neutral surface. */
+/* Base button \2014  reset + flex centring + neutral surface. */
 .wm-follow-btn {
   appearance: none;
   -webkit-appearance: none;
@@ -27367,7 +27367,7 @@ body.map-width-resizing {
 
 /* State variants. */
 .wm-follow-btn--unfollowed {
-  /* inherits base â€” outlined star, neutral border. */
+  /* inherits base \2014  outlined star, neutral border. */
 }
 
 .wm-follow-btn--followed {
@@ -27376,7 +27376,7 @@ body.map-width-resizing {
 }
 
 .wm-follow-btn--followed:hover {
-  /* On hover an already-followed button hints at unfollow â†’ desaturate. */
+  /* On hover an already-followed button hints at unfollow \2192  desaturate. */
   color: var(--text-muted);
   border-color: var(--border);
 }
@@ -27392,12 +27392,12 @@ body.map-width-resizing {
   pointer-events: none;
 }
 
-/* Icon â€” fills inherit currentColor (set on the button). */
+/* Icon \2014  fills inherit currentColor (set on the button). */
 .wm-follow-btn-icon {
   display: block;
 }
 
-/* Spinner â€” reuses the existing `@keyframes spin` already defined in this
+/* Spinner \2014  reuses the existing `@keyframes spin` already defined in this
  * file. */
 .wm-follow-btn-spinner {
   display: block;
@@ -27409,11 +27409,11 @@ body.map-width-resizing {
 }
 
 /* -------------------------------------------------------------------------
- * Host wrappers â€” layout integration on the three live mount surfaces.
+ * Host wrappers \2014  layout integration on the three live mount surfaces.
  * Empty hosts (feature flag off) stay invisible & zero-impact.
  * ----------------------------------------------------------------------- */
 
-/* CIIPanel â€” host is the FIRST CHILD of `.cii-country` (a block-layout
+/* CIIPanel \2014  host is the FIRST CHILD of `.cii-country` (a block-layout
  * row). Position absolute at top-left so it doesn't push the existing
  * `.cii-header` content onto a new line. The `:not(:empty)` gate makes
  * this a no-op when the feature flag is off. The sibling-combinator rule
@@ -27437,7 +27437,7 @@ body.map-width-resizing {
   padding-left: 26px;
 }
 
-/* CountryDeepDivePanel â€” host appended to `.cdp-header-left` (already
+/* CountryDeepDivePanel \2014  host appended to `.cdp-header-left` (already
  * `display: flex; align-items: flex-start; gap: 10px`). Parent's gap
  * handles spacing; we just centre vertically against the 26px flag emoji
  * and the title block. */
@@ -27448,15 +27448,15 @@ body.map-width-resizing {
 }
 
 /* ---------------------------------------------------------------------------
- * NotifyCountryLink (PR B / U8 â€” degraded path)
+ * NotifyCountryLink (PR B / U8 \2014  degraded path)
  *
  * Inline secondary CTA mounted alongside the FollowButton on the Country
  * Deep Dive header. Visible only while the user is following the
  * country (the helper itself decides; CSS just styles the rendered
- * button). Visually understated â€” the FollowButton is the primary
+ * button). Visually understated \2014  the FollowButton is the primary
  * action; this link is the bridge to "configure notifications."
  *
- * Empty hosts (feature flag off OR not-following â†’ handle.html === '')
+ * Empty hosts (feature flag off OR not-following \2192  handle.html === '')
  * stay zero-impact via `:not(:empty)`-gated layout rules.
  * ------------------------------------------------------------------------ */
 .cdp-notify-link-host {
@@ -27513,7 +27513,7 @@ body.map-width-resizing {
  * Same border-radius family as `.cii-share-btn` / `.wm-follow-btn`,
  * pill-shaped via larger horizontal padding.
  *
- * Empty hosts (feature flag off â†’ handle.html === '') stay zero-impact
+ * Empty hosts (feature flag off \2192  handle.html === '') stay zero-impact
  * via `:not(:empty)`-gated layout rules on the per-panel host class.
  * ------------------------------------------------------------------------ */
 .wm-followed-only-chip {
@@ -27550,7 +27550,7 @@ body.map-width-resizing {
 }
 
 .wm-followed-only-chip--active:hover {
-  /* On hover an active chip hints at clearing â†’ desaturate. */
+  /* On hover an active chip hints at clearing \2192  desaturate. */
   color: var(--text-muted);
   border-color: var(--border);
   background: transparent;
@@ -27572,7 +27572,7 @@ body.map-width-resizing {
   white-space: nowrap;
 }
 
-/* Generic header host â€” empty hosts (feature flag off) collapse to zero
+/* Generic header host \2014  empty hosts (feature flag off) collapse to zero
  * width via `:not(:empty)`. Spacing inherited from `.panel-header`'s
  * existing flex layout; `margin-left: auto` would push it to the right
  * but `.panel-header` already manages its own ordering, so we just sit
@@ -27585,7 +27585,7 @@ body.map-width-resizing {
 
 /* ============ Mobile Category Nav + Mobile Banner Parity ============ */
 
-/* Sticky chip bar above the panels grid â€” mobile only. Mounted by
+/* Sticky chip bar above the panels grid \2014  mobile only. Mounted by
  * PanelLayoutManager.setupMobilePanelNav(); hidden entirely on desktop
  * so a resized-up viewport never shows it. Sticks to the top of the
  * .main-content scrollport while the user scrolls panels. */
@@ -27596,7 +27596,7 @@ body.map-width-resizing {
 @media (max-width: 768px) {
   .mobile-panel-nav {
     display: flex;
-    flex-shrink: 0; /* .main-content is a column flexbox â€” don't get crushed */
+    flex-shrink: 0; /* .main-content is a column flexbox \2014  don't get crushed */
     gap: 6px;
     position: sticky;
     top: 0;
@@ -27608,7 +27608,7 @@ body.map-width-resizing {
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    /* pan-y too: the bar is sticky over the top of the scroller â€” a
+    /* pan-y too: the bar is sticky over the top of the scroller \2014  a
      * vertical swipe starting on it must still scroll .main-content. */
     touch-action: pan-x pan-y;
   }
@@ -27634,14 +27634,14 @@ body.map-width-resizing {
   }
 
   .mobile-panel-nav-chip.active {
-    /* --accent is #fff on dark / #111 on light â€” pair with --bg for contrast */
+    /* --accent is #fff on dark / #111 on light \2014  pair with --bg for contrast */
     background: var(--accent);
     border-color: var(--accent);
     color: var(--bg);
     font-weight: 600;
   }
 
-  /* PRO chip â€” gold treatment matching the .panel-locked-cta aesthetic. */
+  /* PRO chip \2014  gold treatment matching the .panel-locked-cta aesthetic. */
   .mobile-panel-nav-chip-pro {
     border-color: #d4a843;
     color: #d4a843;
@@ -27654,7 +27654,7 @@ body.map-width-resizing {
     color: #111;
   }
 
-  /* Lock CTAs get touch-sized and prominent â€” in the single-column scroll
+  /* Lock CTAs get touch-sized and prominent \2014  in the single-column scroll
    * the desktop-sized 6px button reads as decoration, not an action. */
   .panel-locked-cta {
     min-height: 44px;
@@ -27676,13 +27676,13 @@ body.map-width-resizing {
     min-height: 30px;
   }
 
-  /* While fullscreen, collapsing would blank the screen â€” hide the toggle. */
+  /* While fullscreen, collapsing would blank the screen \2014  hide the toggle. */
   .map-section.live-news-fullscreen .map-collapse-btn {
     display: none;
   }
 
   /* The mobile .map-section height (100dvh - 48px) outranks the generic
-   * .live-news-fullscreen height:auto by file order â€” restate it here so
+   * .live-news-fullscreen height:auto by file order \2014  restate it here so
    * fullscreen reaches the fixed tab bar without leaving an extra strip. */
   .map-section.live-news-fullscreen {
     height: auto !important;
@@ -27691,7 +27691,7 @@ body.map-width-resizing {
     bottom: calc(58px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
-  /* Category filter: composes with Panel.toggle()'s `.hidden` â€” a panel
+  /* Category filter: composes with Panel.toggle()'s `.hidden` \2014  a panel
    * renders only when both settings AND the active category allow it. */
   .panels-grid .mobile-cat-hidden {
     display: none !important;
@@ -27702,20 +27702,20 @@ body.map-width-resizing {
     display: none;
   }
 
-  /* Critical posture banner â€” compact mobile variant (was desktop-only).
+  /* Critical posture banner \2014  compact mobile variant (was desktop-only).
    * In-flow (not fixed): a persistent fixed banner at top:50px sits over
    * the sticky chip nav band (z 999 vs 60) and the map header buttons.
    * The element is inserted right after .header in the flex column, so
    * static positioning pushes content down naturally... */
   .critical-posture-banner {
     position: static;
-    flex-shrink: 0; /* flex-column item â€” same crush risk as the chip nav */
+    flex-shrink: 0; /* flex-column item \2014  same crush risk as the chip nav */
     padding: 8px 10px;
     gap: 8px;
     flex-wrap: wrap;
   }
 
-  /* ...which also makes the desktop grid compensations dead gaps â€” the
+  /* ...which also makes the desktop grid compensations dead gaps \2014  the
    * grid sits below the map + chip nav on mobile, not below the banner. */
   body.has-critical-banner .panels-grid {
     padding-top: 4px;
@@ -27743,7 +27743,7 @@ body.map-width-resizing {
     white-space: nowrap;
   }
 
-  /* Breaking news alerts â€” in-flow on mobile (BreakingNewsBanner mounts
+  /* Breaking news alerts \2014  in-flow on mobile (BreakingNewsBanner mounts
    * the container into the app flex column below the header), mirroring
    * the critical posture banner: alerts push content down instead of
    * covering the sticky chip nav / map header for their 30-60s lifetime. */
@@ -27752,7 +27752,7 @@ body.map-width-resizing {
     flex-shrink: 0;
   }
 
-  /* Breaking news alerts â€” let headlines wrap instead of ellipsizing into
+  /* Breaking news alerts \2014  let headlines wrap instead of ellipsizing into
    * uselessness on narrow screens; source/time drops to its own line. */
   .breaking-alert {
     padding: 8px 10px;
@@ -27777,7 +27777,7 @@ body.map-width-resizing {
 }
 
 /* ==========================================================================
-   Panel Tabs â€” named, persistent dashboard workspaces
+   Panel Tabs \2014  named, persistent dashboard workspaces
    ========================================================================== */
 
 .dashboard-tabs-mount {
@@ -27916,13 +27916,13 @@ body.map-width-resizing {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
 }
 
-/* Gold icon/desc/CTA treatment shared with the export locked row â€” see the
+/* Gold icon/desc/CTA treatment shared with the export locked row \2014  see the
    grouped .export-locked-* / .tab-cap-notice-* rules near .export-locked-state. */
 .tab-cap-notice-desc {
   margin: 0;
 }
 
-/* â”€â”€ Notification channel cards (relocated from settings-window.css in PR #4385 follow-up) â”€â”€
+/* \2500 \2500  Notification channel cards (relocated from settings-window.css in PR #4385 follow-up) \2500 \2500 
    Rendered by the in-dashboard UnifiedSettings modal (notifications-settings.ts), so these
    rules + the --settings-* tokens they use must live on the dashboard entry, not in the
    standalone settings-window.css. The standalone settings page resolves the same tokens
@@ -27942,7 +27942,7 @@ body.map-width-resizing {
   --settings-blue: #60a5fa;
 }
 
-/* â”€â”€ Notification channel cards â”€â”€ */
+/* \2500 \2500  Notification channel cards \2500 \2500  */
 
 .us-notif-ch-row {
   display: flex;
@@ -28357,7 +28357,7 @@ body.map-width-resizing {
   animation: none;
 }
 
-/* â”€â”€ Accessibility: motion & focus visibility (#6573) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* \2500 \2500  Accessibility: motion & focus visibility (#6573) \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500 \2500  */
 
 /* Honor the OS-level reduced-motion preference globally. Individual guards
    exist for a handful of selectors above, but ~80 infinite animations and
@@ -28377,7 +28377,7 @@ body.map-width-resizing {
 
 /* Focus rings for controls whose base rules declare `outline: none` (or
    swap only border-color on :focus, below the 3:1 non-text contrast bar)
-   without a :focus-visible replacement. Keyboard-only â€” :focus-visible
+   without a :focus-visible replacement. Keyboard-only \2014  :focus-visible
    leaves mouse focus styling as designed. */
 .region-select:focus-visible,
 .focus-select:focus-visible,
@@ -28666,7 +28666,7 @@ body.map-width-resizing {
   color: #e8e8e8;
 }
 
-/* Mission Pro preview (plan U4/U5) â€” sits after a hosting panel's content. */
+/* Mission Pro preview (plan U4/U5) \2014  sits after a hosting panel's content. */
 .pro-preview {
   margin: 8px 12px 12px;
   padding: 10px 12px;
