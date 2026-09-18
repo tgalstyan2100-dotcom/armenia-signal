@@ -2224,6 +2224,7 @@ export class DataLoaderManager implements AppModule {
     }
 
     this.ctx.allNews = collectedNews;
+    this.callPanel('armenia-home', 'updateNews', this.ctx.allNews);
     const committedServedStale = [...categoryServedStale.values()].some(Boolean) || intelServedStale;
     this.commitNewsFreshness(generation, committedServedStale);
     // Record what this run covered — but only when it actually landed something for
