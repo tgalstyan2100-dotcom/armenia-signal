@@ -28845,6 +28845,26 @@ body.map-width-resizing {
   padding: 14px;
 }
 
+.armenia-home__focus-dashboard {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.9fr) minmax(0, 1.55fr);
+  gap: 12px;
+  padding: 14px;
+}
+
+.armenia-home__focus-feed {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--border-color) 76%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--panel-bg) 84%, transparent);
+}
+
+.armenia-home__focus-feed > .armenia-home__section-label {
+  display: block;
+  margin: 1px 6px 7px;
+}
+
 .armenia-home__lead {
   display: flex;
   flex-direction: column;
@@ -29015,7 +29035,8 @@ a.armenia-home__signal:focus-visible {
 }
 
 @media (max-width: 1100px) {
-  .armenia-home__dashboard { grid-template-columns: 1fr; }
+  .armenia-home__dashboard,
+  .armenia-home__focus-dashboard { grid-template-columns: 1fr; }
   .armenia-home__signal--lead { min-height: 150px; }
 }
 
@@ -29024,6 +29045,7 @@ a.armenia-home__signal:focus-visible {
   .armenia-home__metrics { grid-auto-flow: column; grid-auto-columns: 1fr; }
   .armenia-home__metric { min-width: 0; }
   .armenia-home__dashboard { padding: 10px; }
+  .armenia-home__focus-dashboard { padding: 10px; }
   .armenia-home__lanes { grid-template-columns: 1fr; }
   .armenia-home__title { font-size: calc(18px * var(--wm-panel-effective-scale, 1)); }
 }
