@@ -31,7 +31,7 @@ export const ARMENIA_UI = {
 export const ARMENIA_SECTIONS: readonly ArmeniaSection[] = [
   {
     id: 'home', label: { hy: 'Գլխավոր', ru: 'Главная', en: 'Home' }, shortLabel: { hy: 'Գլխավոր', ru: 'Главная', en: 'Home' },
-    panels: ['map', 'live-news', 'insights', 'strategic-posture', 'intel', 'gdelt-intel', 'economic-correlation', 'markets', 'economic', 'politics', 'tech', 'energy'],
+    panels: ['armenia-home', 'map', 'live-news', 'markets', 'economic', 'politics', 'tech', 'energy', 'insights', 'strategic-posture', 'intel', 'gdelt-intel', 'economic-correlation'],
     layers: ['hotspots', 'conflicts', 'sanctions', 'economic', 'outages', 'weather', 'natural'], timeRange: '24h',
   },
   {
