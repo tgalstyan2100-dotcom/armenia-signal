@@ -19,6 +19,12 @@ describe('Armenia Signal editorial sections', () => {
     assert.equal(applied.mapLayers.tradeRoutes, true);
     assert.equal(applied.mapLayers.sanctions, true);
   });
+  it('puts the dedicated Armenia brief first on Home', () => {
+    const home = ARMENIA_SECTIONS.find((section) => section.id === 'home');
+    assert.equal(home?.panels[0], 'armenia-home');
+    const applied = applyArmeniaSectionToState('home', getInitialPanelSettingsForVariant('full'), DEFAULT_MAP_LAYERS);
+    assert.equal(applied.panelSettings['armenia-home']?.enabled, true);
+  });
   it('cross-tags cyber signals into Security and Technology', () => {
     const current = getInitialPanelSettingsForVariant('full');
     assert.equal(applyArmeniaSectionToState('security', current).mapLayers.cyberThreats, true);
