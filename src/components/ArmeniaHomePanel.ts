@@ -1,6 +1,20 @@
 import { Panel } from './Panel';
-import { ARMENIA_LANGUAGE_STORAGE_KEY, isArmeniaLanguage, type ArmeniaLanguage } from '@/config/armenia-sections';
-import { rankArmeniaNews, type ArmeniaRankedSignal, type ArmeniaRelevanceReason, type ArmeniaSignalCategory } from '@/config/armenia-home';
+import {
+  ARMENIA_LANGUAGE_STORAGE_KEY,
+  ARMENIA_SECTION_STORAGE_KEY,
+  getArmeniaSection,
+  isArmeniaLanguage,
+  isArmeniaSectionId,
+  type ArmeniaLanguage,
+  type ArmeniaSectionId,
+} from '@/config/armenia-sections';
+import {
+  filterArmeniaSignalsForSection,
+  rankArmeniaNews,
+  type ArmeniaRankedSignal,
+  type ArmeniaRelevanceReason,
+  type ArmeniaSignalCategory,
+} from '@/config/armenia-home';
 import type { NewsItem } from '@/types';
 import { h } from '@/utils/dom-utils';
 import { sanitizeUrl } from '@/utils/sanitize';
@@ -24,25 +38,38 @@ type Copy = {
   direct: string;
   regional: string;
   external: string;
+  focusDescription: string;
+  focusList: string;
   reason: Record<ArmeniaRelevanceReason, string>;
 };
 
 const COPY: Record<ArmeniaLanguage, Copy> = {
   hy: {
-    panelTitle: 'ՀԱՅԱՍՏԱՆԻ ՕՐՎԱ ՊԱՏԿՐԸ', eyebrow: 'ARMENIA / 24H SIGNAL', title: 'Կարևորը՝ որոշումների համար',
-    description: 'Հայաստանին ուղղակի կամ նյութականորեն ազդող ազդանշաններ՝ առանց գլոբալ աղմուկի։', signals: 'Կարևոր ազդանշան',
-    economySignals: 'Տնտեսական', urgent: 'Շտապ', lead: 'Գլխավոր ազդանշան', economy: 'Տնտեսություն և շուկաներ', security: 'Անվտանգություն և դիվանագիտություն',
-    technology: 'Տեխնոլոգիաներ', region: 'Տարածաշրջանային այլ ազդանշաններ', empty: 'Հայաստանի վերաբերյալ հաստատված ազդանշան դեռ չկա։',
-    emptyDetail: 'Մենք չենք լրացնում բլոկը պատահական համաշխարհային լուրերով։', source: 'Բացել աղբյուրը', direct: 'Հայաստան', regional: 'Տարածաշրջան', external: 'Արտաքին ազդեցություն',
-    reason: { 'armenia-mention': 'Հայաստանի ուղղակի հիշատակում', 'armenia-location': 'Հայաստանի տարածք', 'south-caucasus': 'Հարավային Կովկաս', 'core-neighbor': 'Հարևան երկրից նյութական ազդեցություն', 'external-impact': 'ԱՄՆ/ԵՄ/Չինաստան՝ տարածաշրջանային ազդեցություն' },
+    panelTitle: 'ՀԱՅԱՍՏԱՆ․ ՈՒՂԻՂ ԱԶԴԱԿՆԵՐ', eyebrow: 'ARMENIA / LIVE SIGNALS', title: 'Կարևորը՝ որոշումների համար',
+    description: 'Հայաստանին ուղղակի կամ նյութականորեն ազդող ազդակներ՝ առանց գլոբալ աղմուկի։', signals: 'Ազդակներ',
+    economySignals: 'Տնտեսական', urgent: 'Շտապ', lead: 'Գլխավոր ազդակ', economy: 'Տնտեսություն և շուկաներ', security: 'Անվտանգություն և դիվանագիտություն',
+    technology: 'Տեխնոլոգիաներ', region: 'Տարածաշրջանային այլ ազդակներ', empty: 'Այս բաժնում Հայաստանի վերաբերյալ հաստատված ազդակ դեռ չկա։',
+    emptyDetail: 'Բլոկը չենք լրացնում պատահական համաշխարհային լուրերով։', source: 'Բացել աղբյուրը', direct: 'Հայաստան', regional: 'Տարածաշրջան', external: 'Արտաքին ազդեցություն',
+    focusDescription: 'Միայն այս բաժնին վերաբերող և Հայաստանի վրա ազդեցություն ունեցող ազդակներ։', focusList: 'Վերջին ազդակներ',
+    reason: { 'armenia-mention': 'Հայաստանի ուղղակի հիշատակում', 'armenia-location': 'Հայաստանի տարածք', 'armenia-source': 'Հայկական սկզբնաղբյուր', 'south-caucasus': 'Հարավային Կովկաս', 'core-neighbor': 'Հարևան երկրից նյութական ազդեցություն', 'external-impact': 'ԱՄՆ/ԵՄ/Չինաստան՝ տարածաշրջանային ազդեցություն' },
   },
   ru: {
-    panelTitle: 'КАРТИНА ДНЯ: АРМЕНИЯ', eyebrow: 'ARMENIA / 24H SIGNAL', title: 'Главное для решений', description: 'Сигналы с прямым или существенным влиянием на Армению, без глобального шума', signals: 'Важные сигналы', economySignals: 'Экономика', urgent: 'Срочные', lead: 'Главный сигнал', economy: 'Экономика и рынки', security: 'Безопасность и дипломатия', technology: 'Технологии', region: 'Другие региональные сигналы', empty: 'Подтверждённых сигналов по Армении пока нет.', emptyDetail: 'Мы не заполняем блок случайными мировыми новостями.', source: 'Открыть источник', direct: 'Армения', regional: 'Регион', external: 'Внешнее влияние',
-    reason: { 'armenia-mention': 'Прямое упоминание Армении', 'armenia-location': 'Территория Армении', 'south-caucasus': 'Южный Кавказ', 'core-neighbor': 'Существенное влияние соседней страны', 'external-impact': 'Влияние США/ЕС/Китая на регион' },
+    panelTitle: 'АРМЕНИЯ: ЖИВЫЕ СИГНАЛЫ', eyebrow: 'ARMENIA / LIVE SIGNALS', title: 'Главное для решений',
+    description: 'Сигналы с прямым или существенным влиянием на Армению, без глобального шума', signals: 'Сигналы',
+    economySignals: 'Экономика', urgent: 'Срочные', lead: 'Главный сигнал', economy: 'Экономика и рынки', security: 'Безопасность и дипломатия',
+    technology: 'Технологии', region: 'Другие региональные сигналы', empty: 'В этом разделе пока нет подтверждённых сигналов по Армении.',
+    emptyDetail: 'Мы не заполняем блок случайными мировыми новостями.', source: 'Открыть источник', direct: 'Армения', regional: 'Регион', external: 'Внешнее влияние',
+    focusDescription: 'Только сигналы этого раздела, способные повлиять на Армению.', focusList: 'Последние сигналы',
+    reason: { 'armenia-mention': 'Прямое упоминание Армении', 'armenia-location': 'Территория Армении', 'armenia-source': 'Армянский первоисточник', 'south-caucasus': 'Южный Кавказ', 'core-neighbor': 'Существенное влияние соседней страны', 'external-impact': 'Влияние США/ЕС/Китая на регион' },
   },
   en: {
-    panelTitle: 'ARMENIA DAILY SIGNAL', eyebrow: 'ARMENIA / 24H SIGNAL', title: 'What matters for decisions', description: 'Signals with direct or material impact on Armenia, without the global noise', signals: 'Material signals', economySignals: 'Economic', urgent: 'Urgent', lead: 'Lead signal', economy: 'Economy & markets', security: 'Security & diplomacy', technology: 'Technology', region: 'Other regional signals', empty: 'No verified Armenia-relevant signal yet.', emptyDetail: 'We will not fill this space with unrelated global headlines.', source: 'Open source', direct: 'Armenia', regional: 'Region', external: 'External impact',
-    reason: { 'armenia-mention': 'Direct Armenia mention', 'armenia-location': 'Located in Armenia', 'south-caucasus': 'South Caucasus impact', 'core-neighbor': 'Material impact from a core neighbor', 'external-impact': 'US/EU/China regional impact' },
+    panelTitle: 'ARMENIA LIVE SIGNALS', eyebrow: 'ARMENIA / LIVE SIGNALS', title: 'What matters for decisions',
+    description: 'Signals with direct or material impact on Armenia, without the global noise', signals: 'Signals',
+    economySignals: 'Economic', urgent: 'Urgent', lead: 'Lead signal', economy: 'Economy & markets', security: 'Security & diplomacy',
+    technology: 'Technology', region: 'Other regional signals', empty: 'No verified Armenia-relevant signal in this section yet.',
+    emptyDetail: 'We will not fill this space with unrelated global headlines.', source: 'Open source', direct: 'Armenia', regional: 'Region', external: 'External impact',
+    focusDescription: 'Only signals in this section with material impact on Armenia.', focusList: 'Latest signals',
+    reason: { 'armenia-mention': 'Direct Armenia mention', 'armenia-location': 'Located in Armenia', 'armenia-source': 'Armenian primary source', 'south-caucasus': 'South Caucasus impact', 'core-neighbor': 'Material impact from a core neighbor', 'external-impact': 'US/EU/China regional impact' },
   },
 };
 
@@ -62,6 +89,15 @@ function readLanguage(): ArmeniaLanguage {
   }
 }
 
+function readSection(): ArmeniaSectionId {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(ARMENIA_SECTION_STORAGE_KEY) ?? '"home"');
+    return isArmeniaSectionId(parsed) ? parsed : 'home';
+  } catch {
+    return 'home';
+  }
+}
+
 function relativeTime(date: Date, language: ArmeniaLanguage): string {
   const timestamp = new Date(date).getTime();
   if (!Number.isFinite(timestamp)) return '';
@@ -76,7 +112,9 @@ function relativeTime(date: Date, language: ArmeniaLanguage): string {
 
 export class ArmeniaHomePanel extends Panel {
   private language: ArmeniaLanguage = readLanguage();
+  private section: ArmeniaSectionId = readSection();
   private ranked: ArmeniaRankedSignal[] = [];
+
   private readonly languageHandler = (event: Event) => {
     const language = (event as CustomEvent<{ language?: unknown }>).detail?.language;
     if (!isArmeniaLanguage(language)) return;
@@ -84,17 +122,23 @@ export class ArmeniaHomePanel extends Panel {
     this.render();
   };
 
+  private readonly sectionHandler = (event: Event) => {
+    const sectionId = (event as CustomEvent<{ sectionId?: unknown }>).detail?.sectionId;
+    if (!isArmeniaSectionId(sectionId)) return;
+    this.section = sectionId;
+    this.render();
+  };
+
   constructor() {
     super({ id: 'armenia-home', title: COPY[readLanguage()].panelTitle, showCount: true, className: 'armenia-home-panel', defaultRowSpan: 2 });
     this.getElement().classList.add('panel-wide');
     window.addEventListener('armenia:language-change', this.languageHandler);
+    window.addEventListener('armenia:section-change', this.sectionHandler);
     this.render();
   }
 
   public updateNews(items: NewsItem[]): void {
     this.ranked = rankArmeniaNews(items);
-    this.setCount(this.ranked.length);
-    this.setDataBadge(this.ranked.length > 0 ? 'live' : 'unavailable');
     const urgent = this.ranked.some((signal) => signal.item.threat?.level === 'critical' || signal.item.threat?.level === 'high');
     this.setSeverity(urgent ? 'high' : this.ranked.length > 0 ? 'low' : 'none');
     this.render();
@@ -106,32 +150,38 @@ export class ArmeniaHomePanel extends Panel {
 
   private render(): void {
     const copy = COPY[this.language];
+    const visibleSignals = filterArmeniaSignalsForSection(this.ranked, this.section);
+    const sectionLabel = getArmeniaSection(this.section).label[this.language];
+    const focused = !['home', 'map', 'region'].includes(this.section);
     const title = this.getElement().querySelector<HTMLElement>('.panel-title');
-    if (title) title.textContent = copy.panelTitle;
-    const economyCount = this.ranked.filter((signal) => signal.tags.includes('economy') || signal.tags.includes('energy')).length;
-    const urgentCount = this.ranked.filter((signal) => signal.item.threat?.level === 'critical' || signal.item.threat?.level === 'high').length;
+    if (title) title.textContent = focused ? `${sectionLabel} · ${copy.signals}` : copy.panelTitle;
+    this.setCount(visibleSignals.length);
+    this.setDataBadge(visibleSignals.length > 0 ? 'live' : 'unavailable');
+
+    const economyCount = visibleSignals.filter((signal) => signal.tags.includes('economy') || signal.tags.includes('energy')).length;
+    const urgentCount = visibleSignals.filter((signal) => signal.item.threat?.level === 'critical' || signal.item.threat?.level === 'high').length;
 
     this.setContentNodes(
       h('div', { className: 'armenia-home' },
         h('section', { className: 'armenia-home__masthead' },
           h('div', { className: 'armenia-home__identity' },
-            h('span', { className: 'armenia-home__eyebrow' }, copy.eyebrow),
-            h('strong', { className: 'armenia-home__title' }, copy.title),
-            h('span', { className: 'armenia-home__description' }, copy.description),
+            h('span', { className: 'armenia-home__eyebrow' }, focused ? `${sectionLabel} / LIVE` : copy.eyebrow),
+            h('strong', { className: 'armenia-home__title' }, focused ? sectionLabel : copy.title),
+            h('span', { className: 'armenia-home__description' }, focused ? copy.focusDescription : copy.description),
           ),
           h('div', { className: 'armenia-home__metrics' },
-            this.metric(String(this.ranked.length), copy.signals, 'signal'),
+            this.metric(String(visibleSignals.length), copy.signals, 'signal'),
             this.metric(String(economyCount), copy.economySignals, 'economy'),
             this.metric(String(urgentCount), copy.urgent, urgentCount > 0 ? 'urgent' : 'calm'),
           ),
         ),
-        this.ranked.length === 0
+        visibleSignals.length === 0
           ? h('div', { className: 'armenia-home__empty' },
             h('span', { className: 'armenia-home__empty-mark', 'aria-hidden': 'true' }, 'ԱՄ'),
             h('strong', null, copy.empty),
             h('span', null, copy.emptyDetail),
           )
-          : this.renderDashboard(copy),
+          : focused ? this.renderFocusedDashboard(copy, visibleSignals) : this.renderDashboard(copy, visibleSignals),
       ),
     );
   }
@@ -143,33 +193,47 @@ export class ArmeniaHomePanel extends Panel {
     );
   }
 
-  private renderDashboard(copy: Copy): HTMLElement {
-    const lead = this.ranked[0]!;
+  private renderDashboard(copy: Copy, signals: ArmeniaRankedSignal[]): HTMLElement {
+    const lead = signals[0]!;
     return h('div', { className: 'armenia-home__dashboard' },
       h('section', { className: 'armenia-home__lead' },
         h('div', { className: 'armenia-home__section-label' }, copy.lead),
         this.signalCard(lead, copy, true),
       ),
       h('div', { className: 'armenia-home__lanes' },
-        this.lane('economy', copy.economy, copy, 4),
-        this.lane('security', copy.security, copy, 3),
-        this.lane('technology', copy.technology, copy, 3),
-        this.lane('region', copy.region, copy, 3),
+        this.lane(signals, 'economy', copy.economy, copy, 4),
+        this.lane(signals, 'security', copy.security, copy, 3),
+        this.lane(signals, 'technology', copy.technology, copy, 3),
+        this.lane(signals, 'region', copy.region, copy, 3),
       ),
     );
   }
 
-  private lane(key: keyof typeof LANE_CATEGORIES, label: string, copy: Copy, limit: number): HTMLElement {
+  private renderFocusedDashboard(copy: Copy, signals: ArmeniaRankedSignal[]): HTMLElement {
+    const [lead, ...remaining] = signals;
+    return h('div', { className: 'armenia-home__focus-dashboard' },
+      h('section', { className: 'armenia-home__lead' },
+        h('div', { className: 'armenia-home__section-label' }, copy.lead),
+        this.signalCard(lead!, copy, true),
+      ),
+      h('section', { className: 'armenia-home__focus-feed' },
+        h('div', { className: 'armenia-home__section-label' }, copy.focusList),
+        ...remaining.slice(0, 8).map((signal) => this.signalCard(signal, copy, false)),
+      ),
+    );
+  }
+
+  private lane(signals: ArmeniaRankedSignal[], key: keyof typeof LANE_CATEGORIES, label: string, copy: Copy, limit: number): HTMLElement {
     const categories = LANE_CATEGORIES[key];
-    const signals = this.ranked.filter((signal) => categories.includes(signal.category)).slice(0, limit);
+    const laneSignals = signals.filter((signal) => categories.includes(signal.category)).slice(0, limit);
     return h('section', { className: `armenia-home__lane armenia-home__lane--${key}` },
       h('div', { className: 'armenia-home__lane-heading' },
         h('span', { className: 'armenia-home__lane-pulse', 'aria-hidden': 'true' }),
         h('strong', null, label),
-        h('span', null, String(signals.length)),
+        h('span', null, String(laneSignals.length)),
       ),
-      ...(signals.length > 0
-        ? signals.map((signal) => this.signalCard(signal, copy, false))
+      ...(laneSignals.length > 0
+        ? laneSignals.map((signal) => this.signalCard(signal, copy, false))
         : [h('div', { className: 'armenia-home__lane-empty' }, '—')]),
     );
   }
@@ -202,6 +266,7 @@ export class ArmeniaHomePanel extends Panel {
 
   public override destroy(): void {
     window.removeEventListener('armenia:language-change', this.languageHandler);
+    window.removeEventListener('armenia:section-change', this.sectionHandler);
     super.destroy();
   }
 }
