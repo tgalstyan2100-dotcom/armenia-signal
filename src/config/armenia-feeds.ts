@@ -1,30 +1,30 @@
+import { getArmeniaSourcesByReadiness } from '@/config/armenia-source-registry';
 import type { Feed } from '@/types';
 import { rssProxyUrl } from '@/utils';
 
 function googleNewsForSite(host: string): string {
-  const query = encodeURIComponent(`site:${host} when:3d`);
+  const query = encodeURIComponent(`site:${host} when:7d`);
   return rssProxyUrl(`https://news.google.com/rss/search?q=${query}&hl=hy&gl=AM&ceid=AM:hy`);
 }
 
-function directFeed(url: string): string {
-  return rssProxyUrl(url);
-}
-
 /**
- * Armenia-first publishers fetched specifically for the Armenia Signal brief.
- * They are intentionally separate from the global World Monitor presets: the
- * panel needs dependable local coverage without enabling another generic news
- * panel or widening every user's global digest.
+ * Runtime Armenia feed set.
+ *
+ * The registry is the source of truth for which Armenia sources are live.
+ * We intentionally use Google News site discovery for the Armenia brief even
+ * when a source also exposes a direct RSS path. That keeps the runtime on the
+ * already-approved news.google.com transport while the direct Armenian RSS
+ * hosts are being added to the proxy allowlist and health checks.
  */
-export const ARMENIA_NEWS_FEEDS: readonly Feed[] = [
-  { name: 'Armenpress', url: googleNewsForSite('armenpress.am') },
-  { name: 'CivilNet', url: googleNewsForSite('civilnet.am') },
-  { name: 'Hetq', url: directFeed('https://hetq.am/hy/rss') },
-  { name: 'Azatutyun', url: googleNewsForSite('azatutyun.am') },
-  { name: 'NEWS.am', url: directFeed('https://news.am/hy/rss') },
-  { name: 'ARKA', url: googleNewsForSite('arka.am') },
-  { name: 'Banks.am', url: directFeed('https://banks.am/am/rss/93') },
-  { name: 'Panorama.am', url: googleNewsForSite('panorama.am') },
-] as const;
+const LIVE_ARMENIA_SOURCES = getArmeniaSourcesByReadiness('live')
+  .filter((source) => source.geography === 'armenia');
+
+export const ARMENIA_NEWS_FEEDS: readonly Feed[] = LIVE_ARMENIA_SOURCES.map((source) => ({
+  name: source.name,
+  url: googleNewsForSite(source.host),
+  lang: source.languages.includes('hy') ? 'hy' : source.languages[0],
+  region: 'Armenia',
+  strategicDefault: true,
+}));
 
 export const ARMENIA_NEWS_SOURCE_NAMES = ARMENIA_NEWS_FEEDS.map((feed) => feed.name);
