@@ -1,3 +1,5 @@
+import type { NewsItem } from '@/types';
+
 export type ArmeniaSignalCategory = 'economy' | 'security' | 'politics' | 'technology' | 'energy' | 'society' | 'region';
 export type ArmeniaSignalScope = 'armenia' | 'region' | 'world-impact';
 export type ArmeniaRelevanceReason = 'armenia-mention' | 'armenia-location' | 'south-caucasus' | 'core-neighbor' | 'external-impact';
@@ -149,4 +151,3 @@ export function rankArmeniaNews(items: readonly NewsItem[], nowMs = Date.now()):
   }
   return ranked.sort((left, right) => right.score - left.score || new Date(right.item.pubDate).getTime() - new Date(left.item.pubDate).getTime());
 }
-
