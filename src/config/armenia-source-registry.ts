@@ -28,7 +28,7 @@ export const ARMENIA_SOURCE_REGISTRY: readonly ArmeniaSourceDefinition[] = [
     domains: ['politics', 'economy', 'infrastructure', 'security', 'regional'],
     provenance: 'official-primary',
     verificationPolicy: 'primary-record',
-    collection: { strategy: 'google-news-site', readiness: 'planned' },
+    collection: { strategy: 'google-news-site', readiness: 'live' },
   },
   {
     id: 'parliament-am',
@@ -41,7 +41,7 @@ export const ARMENIA_SOURCE_REGISTRY: readonly ArmeniaSourceDefinition[] = [
     domains: ['politics'],
     provenance: 'official-primary',
     verificationPolicy: 'primary-record',
-    collection: { strategy: 'google-news-site', readiness: 'planned' },
+    collection: { strategy: 'google-news-site', readiness: 'live' },
   },
   {
     id: 'president-am',
@@ -54,12 +54,12 @@ export const ARMENIA_SOURCE_REGISTRY: readonly ArmeniaSourceDefinition[] = [
     domains: ['politics', 'regional'],
     provenance: 'official-primary',
     verificationPolicy: 'primary-record',
-    collection: { strategy: 'google-news-site', readiness: 'planned' },
+    collection: { strategy: 'google-news-site', readiness: 'live' },
   },
   {
     id: 'mfa-am',
-    name: 'Ministry of Foreign Affairs of Armenia',
-    aliases: ['ՀՀ ԱԳՆ'],
+    name: 'Ministry of Foreign Affairs and International Trade of Armenia',
+    aliases: ['Ministry of Foreign Affairs of Armenia', 'ՀՀ արտաքին գործերի և միջազգային առևտրի նախարարություն', 'ՀՀ ԱԳՆ'],
     host: 'mfa.am',
     geography: 'armenia',
     countryCodes: ['AM'],
@@ -67,7 +67,7 @@ export const ARMENIA_SOURCE_REGISTRY: readonly ArmeniaSourceDefinition[] = [
     domains: ['politics', 'security', 'regional'],
     provenance: 'official-primary',
     verificationPolicy: 'primary-record',
-    collection: { strategy: 'google-news-site', readiness: 'planned' },
+    collection: { strategy: 'google-news-site', readiness: 'live' },
   },
   {
     id: 'mil-am',
@@ -80,7 +80,7 @@ export const ARMENIA_SOURCE_REGISTRY: readonly ArmeniaSourceDefinition[] = [
     domains: ['security', 'regional'],
     provenance: 'official-primary',
     verificationPolicy: 'primary-record',
-    collection: { strategy: 'google-news-site', readiness: 'planned' },
+    collection: { strategy: 'google-news-site', readiness: 'live' },
   },
   {
     id: 'cba-am',
@@ -119,7 +119,7 @@ export const ARMENIA_SOURCE_REGISTRY: readonly ArmeniaSourceDefinition[] = [
     domains: ['economy', 'infrastructure', 'regional'],
     provenance: 'official-primary',
     verificationPolicy: 'primary-record',
-    collection: { strategy: 'google-news-site', readiness: 'planned' },
+    collection: { strategy: 'google-news-site', readiness: 'live' },
   },
   {
     id: 'minfin-am',
@@ -132,7 +132,7 @@ export const ARMENIA_SOURCE_REGISTRY: readonly ArmeniaSourceDefinition[] = [
     domains: ['economy'],
     provenance: 'official-primary',
     verificationPolicy: 'primary-record',
-    collection: { strategy: 'google-news-site', readiness: 'planned' },
+    collection: { strategy: 'google-news-site', readiness: 'live' },
   },
   {
     id: 'mtad-am',
@@ -145,7 +145,7 @@ export const ARMENIA_SOURCE_REGISTRY: readonly ArmeniaSourceDefinition[] = [
     domains: ['infrastructure', 'energy', 'economy'],
     provenance: 'official-primary',
     verificationPolicy: 'primary-record',
-    collection: { strategy: 'google-news-site', readiness: 'planned' },
+    collection: { strategy: 'google-news-site', readiness: 'live' },
   },
   {
     id: 'psrc-am',
@@ -171,7 +171,7 @@ export const ARMENIA_SOURCE_REGISTRY: readonly ArmeniaSourceDefinition[] = [
     domains: ['emergency', 'society', 'energy'],
     provenance: 'official-primary',
     verificationPolicy: 'primary-record',
-    collection: { strategy: 'google-news-site', readiness: 'planned' },
+    collection: { strategy: 'google-news-site', readiness: 'live' },
   },
   {
     id: 'rescue-am',
@@ -184,7 +184,7 @@ export const ARMENIA_SOURCE_REGISTRY: readonly ArmeniaSourceDefinition[] = [
     domains: ['emergency', 'infrastructure', 'society'],
     provenance: 'official-primary',
     verificationPolicy: 'primary-record',
-    collection: { strategy: 'google-news-site', readiness: 'planned' },
+    collection: { strategy: 'google-news-site', readiness: 'live' },
   },
   {
     id: 'ena-am',
@@ -210,7 +210,7 @@ export const ARMENIA_SOURCE_REGISTRY: readonly ArmeniaSourceDefinition[] = [
     domains: ['technology', 'economy', 'security', 'infrastructure'],
     provenance: 'official-primary',
     verificationPolicy: 'primary-record',
-    collection: { strategy: 'google-news-site', readiness: 'planned' },
+    collection: { strategy: 'google-news-site', readiness: 'live' },
   },
   {
     id: 'eif-am',
@@ -223,7 +223,7 @@ export const ARMENIA_SOURCE_REGISTRY: readonly ArmeniaSourceDefinition[] = [
     domains: ['technology', 'economy', 'society'],
     provenance: 'sector-newsroom',
     verificationPolicy: 'corroborate-material-claim',
-    collection: { strategy: 'google-news-site', readiness: 'planned' },
+    collection: { strategy: 'google-news-site', readiness: 'live' },
   },
   {
     id: 'armenpress',
