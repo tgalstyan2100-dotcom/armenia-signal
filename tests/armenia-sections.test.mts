@@ -8,9 +8,12 @@ describe('Armenia Signal editorial sections', () => {
   it('keeps Armenia as the product map center', () => {
     assert.deepEqual(ARMENIA_CENTER, { lat: 40.18, lon: 44.51, zoom: 5.2 });
   });
-  it('offers the agreed navigation in Armenian, Russian and English', () => {
-    assert.deepEqual(ARMENIA_PRIMARY_SECTIONS.map((section) => section.id), ['home', 'map', 'security', 'economy', 'politics', 'technology']);
+  it('offers one desktop map-bearing entry instead of duplicate Home and Map tabs', () => {
+    assert.deepEqual(ARMENIA_PRIMARY_SECTIONS.map((section) => section.id), ['home', 'security', 'economy', 'politics', 'technology']);
     assert.deepEqual(ARMENIA_MORE_SECTIONS.map((section) => section.id), ['energy', 'society', 'emergencies', 'region']);
+    assert.ok(ARMENIA_SECTIONS.some((section) => section.id === 'map'), 'internal map section remains available for mobile/backward compatibility');
+    assert.equal(ARMENIA_PRIMARY_SECTIONS.some((section) => section.id === 'map'), false);
+    assert.equal(ARMENIA_MORE_SECTIONS.some((section) => section.id === 'map'), false);
     for (const section of ARMENIA_SECTIONS) for (const language of ['hy', 'ru', 'en'] as const) assert.ok(section.label[language]);
   });
   it('translates map controls and selectable layers in all three languages', () => {
@@ -44,7 +47,7 @@ describe('Armenia Signal editorial sections', () => {
       const applied = applyArmeniaSectionToState(section.id, current, DEFAULT_MAP_LAYERS);
       assert.equal(applied.panelSettings['armenia-home']?.enabled, true);
       assert.equal(applied.panelSettings['live-news']?.enabled, false);
-      assert.equal(applied.panelSettings.map?.enabled, section.id === 'home' || section.id === 'map', `${section.id} map visibility should match Home and the dedicated Map section`);
+      assert.equal(applied.panelSettings.map?.enabled, section.id === 'home' || section.id === 'map', `${section.id} map visibility should match Home and the internal Map section`);
     }
   });
   it('cross-tags cyber signals into Security and Technology', () => {
