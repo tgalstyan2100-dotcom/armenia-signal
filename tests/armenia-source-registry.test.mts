@@ -37,7 +37,7 @@ describe('Armenia Signal source registry', () => {
   });
 
   it('includes core official primary/data sources without treating the registry as a ranking', () => {
-    for (const id of ['gov-am', 'parliament-am', 'mfa-am', 'mil-am', 'cba-am', 'armstat-am', 'mineconomy-am', 'minfin-am', 'mtad-am', 'psrc-am', 'rescue-am']) {
+    for (const id of ['gov-am', 'parliament-am', 'mfa-am', 'mil-am', 'cba-am', 'armstat-am', 'mineconomy-am', 'minfin-am', 'mtad-am', 'psrc-am', 'rescue-am', 'hightech-am']) {
       const source = ARMENIA_SOURCE_BY_ID.get(id);
       assert.ok(source, `${id} should exist`);
       assert.ok(source.provenance === 'official-primary' || source.provenance === 'official-data');
@@ -45,17 +45,18 @@ describe('Armenia Signal source registry', () => {
     }
   });
 
-  it('separates already-live editorial feeds from planned adapters and official sources', () => {
+  it('has twenty live Armenia sources before structured adapters are enabled', () => {
     const live = getArmeniaSourcesByReadiness('live');
     const planned = getArmeniaSourcesByReadiness('planned');
 
-    assert.deepEqual(
-      live.map((source) => source.name).sort(),
-      ['ARKA', 'Armenpress', 'Azatutyun', 'Banks.am', 'CivilNet', 'Hetq', 'NEWS.am', 'Panorama.am'].sort(),
-    );
-    assert.ok(planned.some((source) => source.id === 'gov-am'));
-    assert.ok(planned.some((source) => source.id === 'armstat-am'));
-    assert.ok(planned.some((source) => source.id === 'oc-media'));
+    assert.equal(live.length, 20);
+    for (const id of ['gov-am', 'parliament-am', 'mfa-am', 'mil-am', 'mineconomy-am', 'minfin-am', 'mtad-am', 'environment-am', 'rescue-am', 'hightech-am', 'eif-am', 'armenpress', 'civilnet', 'hetq', 'azatutyun', 'news-am', 'arka', 'banks-am', 'panorama-am']) {
+      assert.equal(ARMENIA_SOURCE_BY_ID.get(id)?.collection.readiness, 'live', `${id} should be live`);
+    }
+
+    for (const id of ['cba-am', 'armstat-am', 'psrc-am', 'ena-am', 'oc-media', 'civil-ge']) {
+      assert.ok(planned.some((source) => source.id === id), `${id} should remain planned`);
+    }
   });
 
   it('builds source URLs from host plus path without duplicating external URL literals', () => {
