@@ -128,7 +128,7 @@ const PANEL_CLUSTER: Record<string, PanelChunkName> = {
   StrategicRisk: 'panels-defense', ThermalEscalation: 'panels-defense',
   UcdpEvents: 'panels-defense',
   // News / feeds / briefs
-  BreakthroughsTicker: 'panels-news', ClimateNews: 'panels-news',
+  ArmeniaHome: 'panels-news', BreakthroughsTicker: 'panels-news', ClimateNews: 'panels-news',
   DailyMarketBrief: 'panels-news', GdeltIntel: 'panels-news',
   GoodThingsDigest: 'panels-news', LatestBrief: 'panels-news',
   LiveNews: 'panels-news', News: 'panels-news',
