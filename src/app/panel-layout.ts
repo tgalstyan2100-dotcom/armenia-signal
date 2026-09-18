@@ -2726,6 +2726,8 @@ export class PanelLayoutManager implements AppModule {
     // Failed-fetch reload guard: src/main.ts:285-290 (installChunkReloadGuard).
     const mapModulePromise = import('@/components/MapContainer');
 
+    this.lazyDefaultPanel('armenia-home', () => import('@/components/ArmeniaHomePanel'), 'ArmeniaHomePanel');
+
     this.createNewsPanel('politics', 'panels.politics');
     this.createNewsPanel('tech', 'panels.tech');
     this.createNewsPanel('finance', 'panels.finance');
