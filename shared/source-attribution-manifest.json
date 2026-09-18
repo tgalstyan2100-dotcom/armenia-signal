@@ -6376,6 +6376,9 @@
           "path": "server/worldmonitor/news/v1/_feeds.ts"
         },
         {
+          "path": "src/config/armenia-feeds.ts"
+        },
+        {
           "path": "src/config/feeds.ts"
         },
         {
