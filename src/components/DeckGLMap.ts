@@ -61,6 +61,7 @@ import type { WeatherAlert } from '@/services/weather';
 import type { CanadaRoadRecord } from '@/services/canada-roads';
 import type { CanadaAlert } from '@/services/canada-alerts';
 import { escapeHtml } from '@/utils/sanitize';
+import { getArmeniaMapLayerLabel, getArmeniaMapUi } from '@/config/armenia-map-ui';
 import {
   derivePipelinePublicBadge,
   type PipelineEvidenceInput,
@@ -5671,22 +5672,23 @@ export class DeckGLMap {
   private createControls(): void {
     const controls = document.createElement('div');
     controls.className = 'map-controls deckgl-controls';
+    const ui = getArmeniaMapUi();
     setTrustedHtml(controls, trustedHtml(`
       <div class="zoom-controls">
-        <button class="map-btn zoom-in" title="${t('components.deckgl.zoomIn')}" aria-label="${t('components.deckgl.zoomIn')}">+</button>
-        <button class="map-btn zoom-out" title="${t('components.deckgl.zoomOut')}" aria-label="${t('components.deckgl.zoomOut')}">-</button>
-        <button class="map-btn zoom-reset" title="${t('components.deckgl.resetView')}" aria-label="${t('components.deckgl.resetView')}">&#8962;</button>
+        <button class="map-btn zoom-in" title="${escapeHtml(ui.zoomIn)}" aria-label="${escapeHtml(ui.zoomIn)}">+</button>
+        <button class="map-btn zoom-out" title="${escapeHtml(ui.zoomOut)}" aria-label="${escapeHtml(ui.zoomOut)}">-</button>
+        <button class="map-btn zoom-reset" title="${escapeHtml(ui.resetView)}" aria-label="${escapeHtml(ui.resetView)}">&#8962;</button>
       </div>
       <div class="view-selector">
-        <select class="view-select" aria-label="${t('header.selectRegion')}">
-          <option value="global">${t('components.deckgl.views.global')}</option>
-          <option value="america">${t('components.deckgl.views.americas')}</option>
-          <option value="mena">${t('components.deckgl.views.mena')}</option>
-          <option value="eu">${t('components.deckgl.views.europe')}</option>
-          <option value="asia">${t('components.deckgl.views.asia')}</option>
-          <option value="latam">${t('components.deckgl.views.latam')}</option>
-          <option value="africa">${t('components.deckgl.views.africa')}</option>
-          <option value="oceania">${t('components.deckgl.views.oceania')}</option>
+        <select class="view-select" aria-label="${escapeHtml(ui.selectRegion)}">
+          <option value="global">${escapeHtml(ui.views.global)}</option>
+          <option value="america">${escapeHtml(ui.views.america)}</option>
+          <option value="mena">${escapeHtml(ui.views.mena)}</option>
+          <option value="eu">${escapeHtml(ui.views.eu)}</option>
+          <option value="asia">${escapeHtml(ui.views.asia)}</option>
+          <option value="latam">${escapeHtml(ui.views.latam)}</option>
+          <option value="africa">${escapeHtml(ui.views.africa)}</option>
+          <option value="oceania">${escapeHtml(ui.views.oceania)}</option>
         </select>
       </div>
     `, "legacy direct innerHTML migration"));
@@ -5719,14 +5721,15 @@ export class DeckGLMap {
   private createTimeSlider(): void {
     const slider = document.createElement('div');
     slider.className = 'time-slider deckgl-time-slider';
+    const ranges = getArmeniaMapUi().ranges;
     setTrustedHtml(slider, trustedHtml(`
       <div class="time-options">
-        <button class="time-btn ${this.state.timeRange === '1h' ? 'active' : ''}" data-range="1h">1h</button>
-        <button class="time-btn ${this.state.timeRange === '6h' ? 'active' : ''}" data-range="6h">6h</button>
-        <button class="time-btn ${this.state.timeRange === '24h' ? 'active' : ''}" data-range="24h">24h</button>
-        <button class="time-btn ${this.state.timeRange === '48h' ? 'active' : ''}" data-range="48h">48h</button>
-        <button class="time-btn ${this.state.timeRange === '7d' ? 'active' : ''}" data-range="7d">7d</button>
-        <button class="time-btn ${this.state.timeRange === 'all' ? 'active' : ''}" data-range="all">${t('components.deckgl.timeAll')}</button>
+        <button class="time-btn ${this.state.timeRange === '1h' ? 'active' : ''}" data-range="1h">${ranges['1h']}</button>
+        <button class="time-btn ${this.state.timeRange === '6h' ? 'active' : ''}" data-range="6h">${ranges['6h']}</button>
+        <button class="time-btn ${this.state.timeRange === '24h' ? 'active' : ''}" data-range="24h">${ranges['24h']}</button>
+        <button class="time-btn ${this.state.timeRange === '48h' ? 'active' : ''}" data-range="48h">${ranges['48h']}</button>
+        <button class="time-btn ${this.state.timeRange === '7d' ? 'active' : ''}" data-range="7d">${ranges['7d']}</button>
+        <button class="time-btn ${this.state.timeRange === 'all' ? 'active' : ''}" data-range="all">${ranges.all}</button>
       </div>
     `, "legacy direct innerHTML migration"));
 
@@ -5755,22 +5758,23 @@ export class DeckGLMap {
 
     const layerDefs = getLayersForVariant((SITE_VARIANT || 'full') as MapVariant, 'deck');
     const premiumUnlocked = hasPremiumAccess(getAuthState());
+    const ui = getArmeniaMapUi();
     const layerConfig = layerDefs.map(def => ({
       key: def.key,
-      label: resolveLayerLabel(def, t),
+      label: getArmeniaMapLayerLabel(def.key, resolveLayerLabel(def, t)),
       icon: def.icon,
       premium: def.premium,
-      explainLabel: escapeHtml(`Explain ${resolveLayerLabel(def, t)} layer`),
+      explainLabel: escapeHtml(`${ui.explain}: ${getArmeniaMapLayerLabel(def.key, resolveLayerLabel(def, t))}`),
       hasExplanation: hasCuratedLayerExplanation(def.key),
     }));
 
     setTrustedHtml(toggles, trustedHtml(`
       <div class="toggle-header">
-        <span>${t('components.deckgl.layersTitle')}</span>
+        <span>${escapeHtml(ui.layers)}</span>
         <button class="layer-help-btn" aria-label="${t('components.deckgl.layerGuide')}">?</button>
         <button class="toggle-collapse">&#9660;</button>
       </div>
-      <input type="text" class="layer-search" placeholder="${t('components.deckgl.layerSearch')}" autocomplete="off" spellcheck="false" />
+      <input type="text" class="layer-search" placeholder="${escapeHtml(ui.searchLayers)}" autocomplete="off" spellcheck="false" />
       <div class="toggle-list" style="max-height: 32vh; overflow-y: auto; scrollbar-width: thin;">
         ${layerConfig.map(({ key, label, icon, premium, explainLabel, hasExplanation }) => {
           const isLocked = premium === 'locked' && !premiumUnlocked;
