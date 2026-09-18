@@ -2132,6 +2132,14 @@ export class DataLoaderManager implements AppModule {
 
   async loadNews(): Promise<void> {
     const generation = this.beginNewsLoad();
+    const armeniaNewsPromise = this.ctx.panelSettings['armenia-home']?.enabled
+      ? import('@/services/armenia-news')
+        .then(({ fetchArmeniaNews }) => fetchArmeniaNews())
+        .catch((error) => {
+          console.warn('[Armenia Signal] Local source load failed:', error);
+          return [] as NewsItem[];
+        })
+      : Promise.resolve([] as NewsItem[]);
     // Reset happy variant accumulator for fresh pipeline run
     if (SITE_VARIANT === 'happy') {
       this.ctx.happyAllItems = [];
@@ -2221,6 +2229,18 @@ export class DataLoaderManager implements AppModule {
 
     if (SITE_VARIANT === 'full') {
       collectedNews.push(...intelItems);
+    }
+
+    const armeniaNews = await armeniaNewsPromise;
+    if (!this.isCurrentNewsLoad(generation)) return;
+    const seenHeadlines = new Set(
+      collectedNews.map((item) => item.title.normalize('NFKC').toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim()),
+    );
+    for (const item of armeniaNews) {
+      const key = item.title.normalize('NFKC').toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+      if (!key || seenHeadlines.has(key)) continue;
+      collectedNews.push(item);
+      seenHeadlines.add(key);
     }
 
     this.ctx.allNews = collectedNews;
