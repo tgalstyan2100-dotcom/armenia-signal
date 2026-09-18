@@ -160,6 +160,7 @@ import {
   type ArmeniaLanguage,
   type ArmeniaSectionId,
 } from '@/config/armenia-sections';
+import { localizeArmeniaMapControls } from '@/config/armenia-map-ui';
 
 function readStorageValue(key: string): string | null {
   try {
@@ -969,7 +970,7 @@ export class EventHandlerManager implements AppModule {
     });
     const searchParams = new URLSearchParams(window.location.search);
     const hasSharedMapState = ['lat', 'lon', 'zoom', 'view', 'timeRange', 'layers', 'country', 'chokepoint'].some((key) => searchParams.has(key));
-    if (!hasSharedMapState) this.applyArmeniaSection(sectionId, true);
+    this.applyArmeniaSection(sectionId, true, hasSharedMapState);
   }
 
   private setArmeniaLanguage(language: ArmeniaLanguage, persist = true): void {
@@ -991,6 +992,7 @@ export class EventHandlerManager implements AppModule {
       if (select) { select.value = language; select.setAttribute('aria-label', ARMENIA_UI.language[language]); }
     });
     window.dispatchEvent(new CustomEvent('armenia:language-change', { detail: { language } }));
+    localizeArmeniaMapControls(document, language);
     const tabLabels = [getArmeniaSection('home').shortLabel[language], getArmeniaSection('map').shortLabel[language], ARMENIA_UI.search[language], ARMENIA_UI.alerts[language], ARMENIA_UI.more[language]];
     document.querySelectorAll<HTMLElement>('#mobileTabBar .mobile-tab').forEach((tab, index) => {
       const label = tab.querySelector<HTMLElement>('span:last-child');
@@ -1007,10 +1009,12 @@ export class EventHandlerManager implements AppModule {
     document.querySelector('.armenia-more-menu')?.classList.toggle('active', getArmeniaSection(sectionId).more === true);
   }
 
-  private applyArmeniaSection(sectionId: ArmeniaSectionId, silent = false): void {
+  private applyArmeniaSection(sectionId: ArmeniaSectionId, silent = false, preserveSharedMapState = false): void {
     const section = getArmeniaSection(sectionId);
     const applied = applyArmeniaSectionToState(sectionId, this.ctx.panelSettings, this.getMissionDefaultLayers());
-    const mapLayers = this.filterMissionLayersForCurrentRenderer(applied.mapLayers);
+    const mapLayers = preserveSharedMapState
+      ? { ...this.ctx.mapLayers }
+      : this.filterMissionLayersForCurrentRenderer(applied.mapLayers);
     const previousMapLayers = { ...this.ctx.mapLayers };
     const panelSettings = this.limitMissionPanels(applied.panelSettings);
     this.ctx.panelSettings = panelSettings;
@@ -1025,8 +1029,10 @@ export class EventHandlerManager implements AppModule {
     this.ctx.unifiedSettings?.refreshPanelToggles();
     this.ctx.map?.setLayers(mapLayers);
     this.applyMissionMapLayerTransitions(previousMapLayers, mapLayers);
-    this.ctx.map?.setCenter(ARMENIA_CENTER.lat, ARMENIA_CENTER.lon, ARMENIA_CENTER.zoom);
-    this.ctx.map?.setTimeRange(section.timeRange);
+    if (!preserveSharedMapState) {
+      this.ctx.map?.setCenter(ARMENIA_CENTER.lat, ARMENIA_CENTER.lon, ARMENIA_CENTER.zoom);
+      this.ctx.map?.setTimeRange(section.timeRange);
+    }
     this.callbacks.mountLiveNewsIfReady?.();
     this.callbacks.syncDataFreshnessWithLayers();
     this.scheduleMissionDataRefresh();
