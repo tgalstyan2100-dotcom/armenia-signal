@@ -31,52 +31,52 @@ export const ARMENIA_UI = {
 export const ARMENIA_SECTIONS: readonly ArmeniaSection[] = [
   {
     id: 'home', label: { hy: 'Գլխավոր', ru: 'Главная', en: 'Home' }, shortLabel: { hy: 'Գլխավոր', ru: 'Главная', en: 'Home' },
-    panels: ['armenia-home', 'map', 'live-news', 'markets', 'economic', 'politics', 'tech', 'energy', 'insights', 'strategic-posture', 'intel', 'gdelt-intel', 'economic-correlation'],
+    panels: ['armenia-home', 'map', 'markets', 'economic', 'politics', 'tech', 'energy', 'insights', 'strategic-posture', 'intel', 'gdelt-intel', 'economic-correlation'],
     layers: ['hotspots', 'conflicts', 'sanctions', 'economic', 'outages', 'weather', 'natural'], timeRange: '24h',
   },
   {
     id: 'map', label: { hy: 'Քարտեզ', ru: 'Карта', en: 'Map' }, shortLabel: { hy: 'Քարտեզ', ru: 'Карта', en: 'Map' },
-    panels: ['map', 'live-news', 'insights', 'cii', 'strategic-risk'],
+    panels: ['map', 'armenia-home', 'insights', 'cii', 'strategic-risk'],
     layers: ['hotspots', 'conflicts', 'military', 'bases', 'nuclear', 'sanctions', 'economic', 'outages', 'weather', 'natural', 'protests', 'ucdpEvents', 'waterways', 'pipelines'], timeRange: '48h',
   },
   {
     id: 'security', label: { hy: 'Անվտանգություն', ru: 'Безопасность', en: 'Security' }, shortLabel: { hy: 'Անվտանգություն', ru: 'Безопасность', en: 'Security' },
-    panels: ['map', 'live-news', 'insights', 'strategic-posture', 'cii', 'strategic-risk', 'cascade', 'military-correlation', 'escalation-correlation', 'ucdp-events', 'security-advisories', 'sanctions-pressure', 'radiation-watch', 'thermal-escalation'],
+    panels: ['map', 'armenia-home', 'insights', 'strategic-posture', 'cii', 'strategic-risk', 'cascade', 'military-correlation', 'escalation-correlation', 'ucdp-events', 'security-advisories', 'sanctions-pressure', 'radiation-watch', 'thermal-escalation'],
     layers: ['conflicts', 'hotspots', 'military', 'bases', 'nuclear', 'protests', 'ucdpEvents', 'sanctions', 'outages', 'cyberThreats', 'natural', 'ciiChoropleth'], timeRange: '24h',
   },
   {
     id: 'economy', label: { hy: 'Տնտեսություն', ru: 'Экономика', en: 'Economy' }, shortLabel: { hy: 'Տնտեսություն', ru: 'Экономика', en: 'Economy' },
-    panels: ['map', 'live-news', 'markets', 'economic', 'macro-signals', 'consumer-prices', 'fx', 'fuel-prices', 'finance', 'commodities', 'energy-complex', 'supply-chain', 'trade-policy', 'sanctions-pressure', 'economic-correlation', 'gold-intelligence', 'national-debt', 'market-implications'],
+    panels: ['map', 'armenia-home', 'markets', 'economic', 'macro-signals', 'consumer-prices', 'fx', 'fuel-prices', 'finance', 'commodities', 'energy-complex', 'supply-chain', 'trade-policy', 'sanctions-pressure', 'economic-correlation', 'gold-intelligence', 'national-debt', 'market-implications'],
     layers: ['economic', 'stockExchanges', 'centralBanks', 'financialCenters', 'tradeRoutes', 'pipelines', 'waterways', 'commodityHubs', 'commodityPorts', 'sanctions', 'outages'], timeRange: '7d',
   },
   {
     id: 'politics', label: { hy: 'Քաղաքականություն', ru: 'Политика', en: 'Politics' }, shortLabel: { hy: 'Քաղաքականություն', ru: 'Политика', en: 'Politics' },
-    panels: ['map', 'live-news', 'politics', 'gov', 'thinktanks', 'insights', 'intel', 'gdelt-intel', 'strategic-posture', 'sanctions-pressure', 'regional-intelligence'],
+    panels: ['map', 'armenia-home', 'politics', 'gov', 'thinktanks', 'insights', 'intel', 'gdelt-intel', 'strategic-posture', 'sanctions-pressure', 'regional-intelligence'],
     layers: ['hotspots', 'conflicts', 'protests', 'sanctions', 'ucdpEvents', 'economic'], timeRange: '48h',
   },
   {
     id: 'technology', label: { hy: 'Տեխնոլոգիաներ', ru: 'Технологии', en: 'Technology' }, shortLabel: { hy: 'Տեխնոլոգիա', ru: 'Технологии', en: 'Technology' },
-    panels: ['map', 'live-news', 'insights', 'tech', 'ai', 'security', 'policy', 'hardware', 'cloud', 'tech-readiness', 'defense-patents', 'internet-disruptions', 'service-status', 'startups', 'funding'],
+    panels: ['map', 'armenia-home', 'insights', 'tech', 'ai', 'security', 'policy', 'hardware', 'cloud', 'tech-readiness', 'defense-patents', 'internet-disruptions', 'service-status', 'startups', 'funding'],
     layers: ['datacenters', 'startupHubs', 'techHQs', 'techEvents', 'cloudRegions', 'cables', 'outages', 'cyberThreats', 'natural'], timeRange: '7d',
   },
   {
     id: 'energy', label: { hy: 'Էներգետիկա', ru: 'Энергетика', en: 'Energy' }, shortLabel: { hy: 'Էներգետիկա', ru: 'Энергетика', en: 'Energy' },
-    panels: ['map', 'live-news', 'energy', 'energy-complex', 'pipeline-status', 'storage-facility-map', 'fuel-shortages', 'energy-disruptions', 'energy-risk-overview', 'supply-chain', 'commodities', 'economic'],
+    panels: ['map', 'armenia-home', 'energy', 'energy-complex', 'pipeline-status', 'storage-facility-map', 'fuel-shortages', 'energy-disruptions', 'energy-risk-overview', 'supply-chain', 'commodities', 'economic'],
     layers: ['pipelines', 'storageFacilities', 'fuelShortages', 'tradeRoutes', 'waterways', 'commodityPorts', 'commodityHubs', 'sanctions', 'fires', 'weather', 'outages', 'natural'], timeRange: '7d', more: true,
   },
   {
     id: 'society', label: { hy: 'Հասարակություն', ru: 'Общество', en: 'Society' }, shortLabel: { hy: 'Հասարակություն', ru: 'Общество', en: 'Society' },
-    panels: ['map', 'live-news', 'politics', 'disease-outbreaks', 'displacement', 'climate', 'social-velocity', 'population-exposure', 'consumer-prices'],
+    panels: ['map', 'armenia-home', 'politics', 'disease-outbreaks', 'displacement', 'climate', 'social-velocity', 'population-exposure', 'consumer-prices'],
     layers: ['protests', 'displacement', 'diseaseOutbreaks', 'climate', 'weather', 'natural'], timeRange: '7d', more: true,
   },
   {
     id: 'emergencies', label: { hy: 'Արտակարգ իրավիճակներ', ru: 'Чрезвычайные ситуации', en: 'Emergencies' }, shortLabel: { hy: 'Արտակարգ', ru: 'ЧС', en: 'Emergencies' },
-    panels: ['map', 'live-news', 'insights', 'disaster-correlation', 'satellite-fires', 'disease-outbreaks', 'security-advisories', 'radiation-watch', 'thermal-escalation'],
+    panels: ['map', 'armenia-home', 'insights', 'disaster-correlation', 'satellite-fires', 'disease-outbreaks', 'security-advisories', 'radiation-watch', 'thermal-escalation'],
     layers: ['natural', 'weather', 'fires', 'diseaseOutbreaks', 'radiationWatch', 'outages'], timeRange: '24h', more: true,
   },
   {
     id: 'region', label: { hy: 'Տարածաշրջան և աշխարհ', ru: 'Регион и мир', en: 'Region & World' }, shortLabel: { hy: 'Տարածաշրջան', ru: 'Регион и мир', en: 'Region & World' },
-    panels: ['map', 'live-news', 'politics', 'middleeast', 'europe', 'asia', 'us', 'insights', 'gdelt-intel', 'strategic-risk', 'economic-correlation'],
+    panels: ['map', 'armenia-home', 'politics', 'middleeast', 'europe', 'asia', 'us', 'insights', 'gdelt-intel', 'strategic-risk', 'economic-correlation'],
     layers: ['conflicts', 'hotspots', 'protests', 'sanctions', 'economic', 'ucdpEvents', 'outages'], timeRange: '48h', more: true,
   },
 ] as const;
