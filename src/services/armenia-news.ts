@@ -14,12 +14,12 @@ function headlineKey(item: NewsItem): string {
 
 /** Fetches the local editorial floor used only by Armenia Signal. */
 export async function fetchArmeniaNews(): Promise<NewsItem[]> {
-  const results = await Promise.all(
+  const results = await Promise.allSettled(
     ARMENIA_NEWS_FEEDS.map((feed) => fetchFeed(feed, { policy: BRIEF_ONLY_RSS_FETCH_POLICY })),
   );
   const seen = new Set<string>();
   return results
-    .flat()
+    .flatMap((result) => result.status === 'fulfilled' ? result.value : [])
     .sort((left, right) => right.pubDate.getTime() - left.pubDate.getTime())
     .filter((item) => {
       const key = headlineKey(item);
