@@ -1,8 +1,20 @@
 import type { NewsItem } from '@/types';
+import type { ArmeniaSectionId } from '@/config/armenia-sections';
+
+const ARMENIA_DOMESTIC_SOURCE_NAMES = new Set([
+  'armenpress',
+  'civilnet',
+  'hetq',
+  'azatutyun',
+  'news.am',
+  'arka',
+  'banks.am',
+  'panorama.am',
+]);
 
 export type ArmeniaSignalCategory = 'economy' | 'security' | 'politics' | 'technology' | 'energy' | 'society' | 'region';
 export type ArmeniaSignalScope = 'armenia' | 'region' | 'world-impact';
-export type ArmeniaRelevanceReason = 'armenia-mention' | 'armenia-location' | 'south-caucasus' | 'core-neighbor' | 'external-impact';
+export type ArmeniaRelevanceReason = 'armenia-mention' | 'armenia-location' | 'armenia-source' | 'south-caucasus' | 'core-neighbor' | 'external-impact';
 
 export interface ArmeniaRankedSignal {
   item: NewsItem;
@@ -86,8 +98,10 @@ function relevance(item: NewsItem, text: string): Pick<ArmeniaRankedSignal, 'sco
   const reasons: ArmeniaRelevanceReason[] = [];
   const locatedInArmenia = isInsideArmenia(item);
   const mentionsArmenia = containsAny(text, DIRECT_ARMENIA_TERMS);
+  const domesticSource = ARMENIA_DOMESTIC_SOURCE_NAMES.has(item.source.toLocaleLowerCase());
   if (mentionsArmenia) reasons.push('armenia-mention');
   if (locatedInArmenia) reasons.push('armenia-location');
+  if (domesticSource) reasons.push('armenia-source');
   if (reasons.length > 0) return { scope: 'armenia', reasons };
 
   const southCaucasus = containsAny(text, SOUTH_CAUCASUS_TERMS);
@@ -150,4 +164,27 @@ export function rankArmeniaNews(items: readonly NewsItem[], nowMs = Date.now()):
     seen.add(headlineKey);
   }
   return ranked.sort((left, right) => right.score - left.score || new Date(right.item.pubDate).getTime() - new Date(left.item.pubDate).getTime());
+}
+
+const SECTION_CATEGORIES: Partial<Record<ArmeniaSectionId, ArmeniaSignalCategory[]>> = {
+  security: ['security', 'politics', 'technology'],
+  economy: ['economy', 'energy'],
+  politics: ['politics'],
+  technology: ['technology'],
+  energy: ['energy'],
+  society: ['society'],
+  emergencies: ['society', 'security', 'energy'],
+};
+
+export function filterArmeniaSignalsForSection(
+  signals: readonly ArmeniaRankedSignal[],
+  section: ArmeniaSectionId,
+): ArmeniaRankedSignal[] {
+  if (section === 'home' || section === 'map') return [...signals];
+  if (section === 'region') return signals.filter((signal) => signal.scope !== 'armenia');
+  const categories = SECTION_CATEGORIES[section] ?? [];
+  return signals.filter((signal) => {
+    if (section === 'emergencies' && (signal.item.threat?.level === 'critical' || signal.item.threat?.level === 'high')) return true;
+    return signal.tags.some((tag) => categories.includes(tag));
+  });
 }
