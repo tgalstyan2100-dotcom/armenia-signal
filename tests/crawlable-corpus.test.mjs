@@ -497,6 +497,18 @@ describe('sources catalog domain assignment', () => {
     );
   });
 
+  it('classifies structured Armenian publishers without blocking the catalog build', () => {
+    const catalog = buildSourceCatalog([
+      { provider: 'banks.am', host: 'banks.am', kind: 'structured', references: [{ path: 'src/config/armenia-feeds.ts' }] },
+      { provider: 'hetq.am', host: 'hetq.am', kind: 'structured', references: [{ path: 'src/config/armenia-feeds.ts' }] },
+      { provider: 'news.am', host: 'news.am', kind: 'structured', references: [{ path: 'src/config/armenia-feeds.ts' }] },
+    ]);
+    assert.deepEqual(
+      Object.fromEntries(catalog.map((row) => [row.provider, row.domainId])),
+      { 'banks.am': 'finance', 'hetq.am': 'news', 'news.am': 'news' },
+    );
+  });
+
   it('still fails closed when a structured provider has no catalog domain', () => {
     assert.throws(
       () => buildSourceCatalog([{
@@ -511,6 +523,12 @@ describe('sources catalog domain assignment', () => {
 });
 
 describe('sources catalog origin countries', () => {
+  it('classifies Armenia Signal publishers as Armenian', () => {
+    for (const host of ['arka.am', 'armenpress.am', 'azatutyun.am', 'banks.am', 'civilnet.am', 'hetq.am', 'news.am', 'panorama.am']) {
+      assert.equal(resolveSourceOrigin({ provider: host, hosts: [host] }), 'AM');
+    }
+  });
+
   it('infers national ccTLDs and government suffixes', () => {
     assert.equal(resolveSourceOrigin({ provider: '24.hu', hosts: ['24.hu'] }), 'HU');
     assert.equal(resolveSourceOrigin({
