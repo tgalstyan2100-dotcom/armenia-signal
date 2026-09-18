@@ -81,8 +81,11 @@ export const ARMENIA_SECTIONS: readonly ArmeniaSection[] = [
   },
 ] as const;
 
-export const ARMENIA_PRIMARY_SECTIONS = ARMENIA_SECTIONS.filter((section) => !section.more);
-export const ARMENIA_MORE_SECTIONS = ARMENIA_SECTIONS.filter((section) => section.more);
+// The dedicated map section remains internally available for mobile/backward
+// compatibility, but desktop navigation exposes only one map-bearing entry:
+// Home. This removes the duplicate Home + Map tabs without deleting map logic.
+export const ARMENIA_PRIMARY_SECTIONS = ARMENIA_SECTIONS.filter((section) => !section.more && section.id !== 'map');
+export const ARMENIA_MORE_SECTIONS = ARMENIA_SECTIONS.filter((section) => section.more && section.id !== 'map');
 export const ARMENIA_LANGUAGE_STORAGE_KEY = 'armenia-signal-language-v1';
 export const ARMENIA_SECTION_STORAGE_KEY = 'armenia-signal-section-v1';
 
