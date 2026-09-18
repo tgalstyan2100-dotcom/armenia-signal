@@ -15,6 +15,7 @@ import {
   type ArmeniaRelevanceReason,
   type ArmeniaSignalCategory,
 } from '@/config/armenia-home';
+import { ARMENIA_NEWS_SOURCE_NAMES } from '@/config/armenia-feeds';
 import type { NewsItem } from '@/types';
 import { h } from '@/utils/dom-utils';
 import { sanitizeUrl } from '@/utils/sanitize';
@@ -40,6 +41,8 @@ type Copy = {
   external: string;
   focusDescription: string;
   focusList: string;
+  localSources: string;
+  activeSources: string;
   reason: Record<ArmeniaRelevanceReason, string>;
 };
 
@@ -51,6 +54,7 @@ const COPY: Record<ArmeniaLanguage, Copy> = {
     technology: 'Տեխնոլոգիաներ', region: 'Տարածաշրջանային այլ ազդակներ', empty: 'Այս բաժնում Հայաստանի վերաբերյալ հաստատված ազդակ դեռ չկա։',
     emptyDetail: 'Բլոկը չենք լրացնում պատահական համաշխարհային լուրերով։', source: 'Բացել աղբյուրը', direct: 'Հայաստան', regional: 'Տարածաշրջան', external: 'Արտաքին ազդեցություն',
     focusDescription: 'Միայն այս բաժնին վերաբերող և Հայաստանի վրա ազդեցություն ունեցող ազդակներ։', focusList: 'Վերջին ազդակներ',
+    localSources: 'Հայկական աղբյուրներ', activeSources: 'ակտիվ',
     reason: { 'armenia-mention': 'Հայաստանի ուղղակի հիշատակում', 'armenia-location': 'Հայաստանի տարածք', 'armenia-source': 'Հայկական սկզբնաղբյուր', 'south-caucasus': 'Հարավային Կովկաս', 'core-neighbor': 'Հարևան երկրից նյութական ազդեցություն', 'external-impact': 'ԱՄՆ/ԵՄ/Չինաստան՝ տարածաշրջանային ազդեցություն' },
   },
   ru: {
@@ -60,6 +64,7 @@ const COPY: Record<ArmeniaLanguage, Copy> = {
     technology: 'Технологии', region: 'Другие региональные сигналы', empty: 'В этом разделе пока нет подтверждённых сигналов по Армении.',
     emptyDetail: 'Мы не заполняем блок случайными мировыми новостями.', source: 'Открыть источник', direct: 'Армения', regional: 'Регион', external: 'Внешнее влияние',
     focusDescription: 'Только сигналы этого раздела, способные повлиять на Армению.', focusList: 'Последние сигналы',
+    localSources: 'Армянские источники', activeSources: 'активны',
     reason: { 'armenia-mention': 'Прямое упоминание Армении', 'armenia-location': 'Территория Армении', 'armenia-source': 'Армянский первоисточник', 'south-caucasus': 'Южный Кавказ', 'core-neighbor': 'Существенное влияние соседней страны', 'external-impact': 'Влияние США/ЕС/Китая на регион' },
   },
   en: {
@@ -69,6 +74,7 @@ const COPY: Record<ArmeniaLanguage, Copy> = {
     technology: 'Technology', region: 'Other regional signals', empty: 'No verified Armenia-relevant signal in this section yet.',
     emptyDetail: 'We will not fill this space with unrelated global headlines.', source: 'Open source', direct: 'Armenia', regional: 'Region', external: 'External impact',
     focusDescription: 'Only signals in this section with material impact on Armenia.', focusList: 'Latest signals',
+    localSources: 'Armenian sources', activeSources: 'active',
     reason: { 'armenia-mention': 'Direct Armenia mention', 'armenia-location': 'Located in Armenia', 'armenia-source': 'Armenian primary source', 'south-caucasus': 'South Caucasus impact', 'core-neighbor': 'Material impact from a core neighbor', 'external-impact': 'US/EU/China regional impact' },
   },
 };
@@ -160,6 +166,9 @@ export class ArmeniaHomePanel extends Panel {
 
     const economyCount = visibleSignals.filter((signal) => signal.tags.includes('economy') || signal.tags.includes('energy')).length;
     const urgentCount = visibleSignals.filter((signal) => signal.item.threat?.level === 'critical' || signal.item.threat?.level === 'high').length;
+    const sourceCounts = new Map<string, number>();
+    for (const signal of this.ranked) sourceCounts.set(signal.item.source, (sourceCounts.get(signal.item.source) ?? 0) + 1);
+    const activeSourceCount = ARMENIA_NEWS_SOURCE_NAMES.filter((source) => (sourceCounts.get(source) ?? 0) > 0).length;
 
     this.setContentNodes(
       h('div', { className: 'armenia-home' },
@@ -173,6 +182,20 @@ export class ArmeniaHomePanel extends Panel {
             this.metric(String(visibleSignals.length), copy.signals, 'signal'),
             this.metric(String(economyCount), copy.economySignals, 'economy'),
             this.metric(String(urgentCount), copy.urgent, urgentCount > 0 ? 'urgent' : 'calm'),
+          ),
+        ),
+        h('section', { className: 'armenia-home__sources', 'aria-label': copy.localSources },
+          h('div', { className: 'armenia-home__sources-heading' },
+            h('strong', null, copy.localSources),
+            h('span', null, `${activeSourceCount}/${ARMENIA_NEWS_SOURCE_NAMES.length} ${copy.activeSources}`),
+          ),
+          h('div', { className: 'armenia-home__source-list' },
+            ...ARMENIA_NEWS_SOURCE_NAMES.map((source) => {
+              const count = sourceCounts.get(source) ?? 0;
+              return h('span', {
+                className: `armenia-home__source${count > 0 ? ' armenia-home__source--active' : ''}`,
+              }, source, h('small', null, String(count)));
+            }),
           ),
         ),
         visibleSignals.length === 0
