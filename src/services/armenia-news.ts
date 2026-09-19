@@ -1,62 +1,147 @@
-import { ARMENIA_NEWS_FEEDS } from '@/config/armenia-feeds';
+import type {
+  ArmeniaContentSignal,
+  ArmeniaContentSnapshot,
+  ArmeniaSignalDomain,
+  ArmeniaSourceHealth,
+} from '@/types/armenia-signal';
 import type { NewsItem } from '@/types';
-import { BRIEF_ONLY_RSS_FETCH_POLICY, fetchFeed } from './rss';
+import type {
+  ArmeniaRankedSignal,
+  ArmeniaRelevanceReason,
+  ArmeniaSignalCategory,
+  ArmeniaSignalScope,
+} from '@/config/armenia-home';
 
-const MAX_ARMENIA_ITEMS = 80;
+const CLIENT_CACHE_TTL_MS = 2 * 60 * 1_000;
 
-function headlineKey(item: NewsItem): string {
-  return item.title
-    .normalize('NFKC')
-    .toLocaleLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, ' ')
-    .trim();
+let cachedSnapshot: ArmeniaContentSnapshot | null = null;
+let cachedAt = 0;
+let inFlight: Promise<ArmeniaContentSnapshot> | null = null;
+
+export interface ArmeniaContentClientSnapshot {
+  generatedAt: string;
+  newsItems: NewsItem[];
+  signals: ArmeniaRankedSignal[];
+  sources: ArmeniaSourceHealth[];
 }
 
-function newestFirst(left: NewsItem, right: NewsItem): number {
-  return right.pubDate.getTime() - left.pubDate.getTime();
+function domainToCategory(domain: ArmeniaSignalDomain): ArmeniaSignalCategory {
+  switch (domain) {
+    case 'infrastructure':
+      return 'economy';
+    case 'emergency':
+      return 'society';
+    case 'regional':
+      return 'region';
+    default:
+      return domain;
+  }
+}
+
+function scopeToUi(scope: ArmeniaContentSignal['scope']): ArmeniaSignalScope {
+  if (scope === 'south-caucasus') return 'region';
+  if (scope === 'external-impact') return 'world-impact';
+  return 'armenia';
+}
+
+function reasonToUi(
+  reason: ArmeniaContentSignal['relevanceReasons'][number],
+): ArmeniaRelevanceReason {
+  return reason;
+}
+
+function signalToNewsItem(signal: ArmeniaContentSignal): NewsItem {
+  const publishedAt = signal.publishedAt ? new Date(signal.publishedAt) : new Date(signal.observedAt);
+  return {
+    source: signal.sourceName,
+    title: signal.title,
+    link: signal.url,
+    pubDate: publishedAt,
+    pubDateMissing: !signal.publishedAt,
+    isAlert: signal.urgency === 'critical' || signal.urgency === 'high',
+    ...(signal.summary ? { snippet: signal.summary } : {}),
+    importanceScore: signal.relevanceScore,
+    credibilityScore: Math.round(signal.confidence * 100),
+  };
+}
+
+function signalToRanked(signal: ArmeniaContentSignal): ArmeniaRankedSignal {
+  const item = signalToNewsItem(signal);
+  const tags = [...new Set(signal.domains.map(domainToCategory))];
+  return {
+    item,
+    category: domainToCategory(signal.primaryDomain),
+    tags,
+    scope: scopeToUi(signal.scope),
+    reasons: signal.relevanceReasons.map(reasonToUi),
+    score: signal.relevanceScore,
+  };
+}
+
+function isSnapshot(value: unknown): value is ArmeniaContentSnapshot {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<ArmeniaContentSnapshot>;
+  return candidate.version === 1
+    && typeof candidate.generatedAt === 'string'
+    && Array.isArray(candidate.signals)
+    && Array.isArray(candidate.sources);
+}
+
+async function requestSnapshot(): Promise<ArmeniaContentSnapshot> {
+  const response = await fetch('/api/armenia/signals', {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    credentials: 'same-origin',
+  });
+  if (!response.ok) {
+    throw new Error(`Armenia content API returned HTTP ${response.status}`);
+  }
+  const data = await response.json() as unknown;
+  if (!isSnapshot(data)) {
+    throw new Error('Armenia content API returned an invalid payload');
+  }
+  return data;
+}
+
+export async function fetchArmeniaContent(): Promise<ArmeniaContentClientSnapshot> {
+  const now = Date.now();
+  if (cachedSnapshot && now - cachedAt < CLIENT_CACHE_TTL_MS) {
+    return {
+      generatedAt: cachedSnapshot.generatedAt,
+      newsItems: cachedSnapshot.signals.map(signalToNewsItem),
+      signals: cachedSnapshot.signals.map(signalToRanked),
+      sources: [...cachedSnapshot.sources],
+    };
+  }
+
+  if (!inFlight) {
+    inFlight = requestSnapshot()
+      .then((snapshot) => {
+        cachedSnapshot = snapshot;
+        cachedAt = Date.now();
+        return snapshot;
+      })
+      .finally(() => {
+        inFlight = null;
+      });
+  }
+
+  const snapshot = await inFlight;
+  return {
+    generatedAt: snapshot.generatedAt,
+    newsItems: snapshot.signals.map(signalToNewsItem),
+    signals: snapshot.signals.map(signalToRanked),
+    sources: [...snapshot.sources],
+  };
 }
 
 /**
- * Fetches the Armenia-first editorial floor used by Armenia Signal.
+ * Compatibility bridge for the global news loader.
  *
- * The first pass keeps one fresh item from every responding source before the
- * remaining capacity is filled by recency. This prevents a few high-volume
- * publishers from crowding every other Armenian source out of the brief.
+ * The returned items are already Armenia-filtered by the server content engine.
+ * ArmeniaHomePanel itself no longer consumes the global allNews corpus.
  */
 export async function fetchArmeniaNews(): Promise<NewsItem[]> {
-  const results = await Promise.allSettled(
-    ARMENIA_NEWS_FEEDS.map((feed) => fetchFeed(feed, { policy: BRIEF_ONLY_RSS_FETCH_POLICY })),
-  );
-
-  const buckets = results.map((result) => (
-    result.status === 'fulfilled'
-      ? [...result.value].sort(newestFirst)
-      : []
-  ));
-
-  const selected: NewsItem[] = [];
-  const seen = new Set<string>();
-
-  // Coverage floor: one unique fresh story per responding Armenia source.
-  for (const items of buckets) {
-    for (const item of items) {
-      const key = headlineKey(item);
-      if (!key || seen.has(key)) continue;
-      seen.add(key);
-      selected.push(item);
-      break;
-    }
-  }
-
-  // Fill the rest strictly by freshness, preserving headline de-duplication.
-  const remaining = buckets.flat().sort(newestFirst);
-  for (const item of remaining) {
-    if (selected.length >= MAX_ARMENIA_ITEMS) break;
-    const key = headlineKey(item);
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    selected.push(item);
-  }
-
-  return selected.sort(newestFirst).slice(0, MAX_ARMENIA_ITEMS);
+  const snapshot = await fetchArmeniaContent();
+  return snapshot.newsItems;
 }
