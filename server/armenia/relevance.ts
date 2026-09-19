@@ -5,6 +5,7 @@ import type {
   ArmeniaSignalUrgency,
   ArmeniaSourceDefinition,
 } from '../../src/types/armenia-signal';
+import { armeniaFreshnessScore, assessArmeniaArticleQuality } from './content-quality';
 import type { RawArmeniaArticle } from './source-adapters';
 
 export interface ClassifiedArmeniaArticle extends RawArmeniaArticle {
@@ -12,6 +13,9 @@ export interface ClassifiedArmeniaArticle extends RawArmeniaArticle {
   domains: ArmeniaSignalDomain[];
   scope: ArmeniaEventScope;
   relevanceScore: number;
+  importanceScore: number;
+  freshnessScore: number;
+  qualityScore: number;
   relevanceReasons: ArmeniaContentRelevanceReason[];
   urgency: ArmeniaSignalUrgency;
 }
@@ -44,11 +48,11 @@ const MATERIAL_IMPACT_TERMS = [
   'gas', 'oil', 'energy', 'nuclear', 'transport', 'rail', 'road', 'airspace', 'flight', 'security', 'defense',
   'military', 'peace', 'ceasefire', 'treaty', 'diplomat', 'summit', 'agreement', 'blockade', 'closure',
   'earthquake', 'flood', 'wildfire', 'cyber', 'outage', 'disruption', 'eaeu', 'eurasian economic union',
-  'middle corridor', 'north-south',
+  'middle corridor', 'north-south', 'policy rate', 'inflation', 'budget', 'tax', 'credit', 'deposit',
   'սահման', 'միջանցք', 'պատժամիջոց', 'առևտուր', 'արտահանում', 'ներմուծում', 'ներդրում', 'էներգ',
-  'անվտանգ', 'պաշտպան', 'խաղաղ', 'կիբեր', 'աղետ', 'փակում', 'ճանապարհ',
+  'անվտանգ', 'պաշտպան', 'խաղաղ', 'կիբեր', 'աղետ', 'փակում', 'ճանապարհ', 'տոկոսադրույք', 'գնաճ', 'բյուջե',
   'границ', 'коридор', 'санкц', 'торгов', 'экспорт', 'импорт', 'инвест', 'энерг', 'безопас', 'оборон',
-  'мирн', 'кибер', 'землетряс', 'перекрыт',
+  'мирн', 'кибер', 'землетряс', 'перекрыт', 'ставк', 'инфляц', 'бюджет',
 ] as const;
 
 const GLOBAL_POWER_TERMS = [
@@ -68,9 +72,9 @@ const DOMAIN_TERMS: Record<ArmeniaSignalDomain, readonly string[]> = {
   economy: [
     'economy', 'economic', 'gdp', 'inflation', 'price', 'market', 'trade', 'export', 'import', 'tariff',
     'bank', 'central bank', 'currency', 'dram', 'investment', 'business', 'industry', 'tax', 'budget',
-    'debt', 'employment', 'wage', 'տնտես', 'գնաճ', 'գին', 'շուկա', 'առևտուր', 'բանկ', 'դրամ',
-    'ներդրում', 'բյուջե', 'աշխատավարձ', 'հարկ', 'эконом', 'инфляц', 'цен', 'рынок', 'торгов', 'банк',
-    'драм', 'инвест', 'бюджет',
+    'debt', 'employment', 'wage', 'credit', 'deposit', 'bond', 'տնտես', 'գնաճ', 'գին', 'շուկա', 'առևտուր',
+    'բանկ', 'դրամ', 'ներդրում', 'բյուջե', 'աշխատավարձ', 'հարկ', 'վարկ', 'ավանդ', 'պարտատոմս',
+    'эконом', 'инфляц', 'цен', 'рынок', 'торгов', 'банк', 'драм', 'инвест', 'бюджет', 'кредит', 'депозит',
   ],
   energy: [
     'energy', 'electricity', 'power grid', 'gas', 'oil', 'fuel', 'nuclear', 'pipeline', 'hydro', 'solar',
@@ -99,8 +103,9 @@ const DOMAIN_TERMS: Record<ArmeniaSignalDomain, readonly string[]> = {
   ],
   technology: [
     'cyber', 'hack', 'ransomware', 'malware', 'data breach', 'artificial intelligence', ' ai ', 'startup',
-    'software', 'telecom', 'digital', 'semiconductor', 'կիբեր', 'հաքեր', 'տեխնոլոգ', 'արհեստական բանականություն',
-    'ստարտափ', 'թվայն', 'кибер', 'хакер', 'технолог', 'искусственный интеллект', 'стартап',
+    'software', 'telecom', 'digital', 'semiconductor', 'data center', 'cloud', 'կիբեր', 'հաքեր', 'տեխնոլոգ',
+    'արհեստական բանականություն', 'ստարտափ', 'թվայն', 'տվյալների կենտրոն', 'кибер', 'хакер', 'технолог',
+    'искусственный интеллект', 'стартап',
   ],
   regional: [
     'south caucasus', 'caucasus', 'azerbaijan', 'georgia', 'turkey', 'iran',
@@ -121,6 +126,23 @@ const CRITICAL_URGENCY_TERMS = [
   'чрезвычайное положение', 'массовые жертвы', 'масштабная атака', 'сильное землетрясение',
 ] as const;
 
+const DECISION_IMPACT_TERMS = [
+  'policy rate', 'inflation', 'budget', 'tax', 'tariff', 'sanction', 'export', 'import', 'investment', 'credit',
+  'deposit', 'exchange rate', 'currency', 'gas price', 'electricity tariff', 'border', 'corridor', 'rail', 'road closed',
+  'ceasefire', 'treaty', 'agreement', 'cyberattack', 'outage', 'mobilization', 'evacuation', 'earthquake', 'flood',
+  'տոկոսադրույք', 'գնաճ', 'բյուջե', 'հարկ', 'սակագին', 'պատժամիջոց', 'արտահանում', 'ներմուծում', 'ներդրում',
+  'վարկ', 'ավանդ', 'փոխարժեք', 'գազի գին', 'էլեկտրաէներգիայի սակագին', 'սահման', 'միջանցք', 'հրադադար',
+  'պայմանագիր', 'կիբերհարձակում', 'խափանում', 'տարհանում', 'երկրաշարժ', 'ջրհեղեղ',
+  'ставк', 'инфляц', 'бюджет', 'налог', 'тариф', 'санкц', 'экспорт', 'импорт', 'инвест', 'кредит',
+  'курс', 'цена газа', 'границ', 'коридор', 'перемир', 'договор', 'кибератак', 'эвакуац',
+] as const;
+
+const LOW_DECISION_VALUE_TERMS = [
+  'credentials', 'courtesy visit', 'anniversary', 'medalist', 'board of trustees', 'working meeting', 'roads are passable', 'road is passable', 'weather in armenia',
+  'հավատարմագր', 'հոբելյան', 'պարգևատրվ', 'հոգաբարձուների խորհուրդ', 'աշխատանքային հանդիպում', 'ճանապարհները անցանելի', 'ճանապարհն անցանելի', 'եղանակը Հայաստանում',
+  'верительн.*грамот', 'юбиле', 'рабоч.*встреч',
+] as const;
+
 function normalize(value: string): string {
   return ` ${value.normalize('NFKC').toLocaleLowerCase()} `.replace(/\s+/g, ' ');
 }
@@ -139,12 +161,16 @@ function classifyDomains(text: string, source: ArmeniaSourceDefinition): Armenia
     .map(([domain]) => domain);
 
   if (matched.length > 0) return uniqueDomains(matched);
-  return uniqueDomains(source.domains.length > 0 ? source.domains : ['regional']);
+
+  // Source coverage is not article classification. Falling back to every
+  // domain in the registry made one generic ministry page look simultaneously
+  // like economy + energy + infrastructure. Use one conservative domain only.
+  return [source.domains[0] ?? 'regional'];
 }
 
 function primaryDomain(domains: readonly ArmeniaSignalDomain[]): ArmeniaSignalDomain {
   const priority: ArmeniaSignalDomain[] = [
-    'emergency', 'security', 'politics', 'economy', 'energy', 'technology', 'infrastructure', 'society', 'regional',
+    'emergency', 'security', 'technology', 'economy', 'energy', 'infrastructure', 'politics', 'society', 'regional',
   ];
   return priority.find((domain) => domains.includes(domain)) ?? 'regional';
 }
@@ -160,7 +186,66 @@ function isOfficial(source: ArmeniaSourceDefinition): boolean {
   return source.provenance === 'official-primary' || source.provenance === 'official-data';
 }
 
+function clamp(value: number): number {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function importanceFor(
+  article: RawArmeniaArticle,
+  text: string,
+  domain: ArmeniaSignalDomain,
+  urgency: ArmeniaSignalUrgency,
+  freshnessScore: number,
+  qualityScore: number,
+): number {
+  const urgencyBase: Record<ArmeniaSignalUrgency, number> = {
+    low: 24,
+    medium: 42,
+    high: 70,
+    critical: 88,
+  };
+  const domainBoost: Partial<Record<ArmeniaSignalDomain, number>> = {
+    emergency: 8,
+    security: 7,
+    economy: 6,
+    energy: 5,
+    technology: 4,
+    infrastructure: 4,
+  };
+
+  let score = urgencyBase[urgency] + (domainBoost[domain] ?? 2);
+  const decisionHits = DECISION_IMPACT_TERMS.reduce((count, term) => count + (text.includes(term) ? 1 : 0), 0);
+  score += Math.min(24, decisionHits * 6);
+  if (containsAny(text, MATERIAL_IMPACT_TERMS)) score += 5;
+  score += freshnessScore * 0.12;
+  score += qualityScore * 0.08;
+  if (isOfficial(article.source)) score += 3;
+
+  if (LOW_DECISION_VALUE_TERMS.some((term) => {
+    try {
+      return new RegExp(term, 'iu').test(text);
+    } catch {
+      return text.includes(term);
+    }
+  })) {
+    score -= 18;
+  }
+
+  // A Google News crawl timestamp is not an origin publication timestamp.
+  // Unverified discoveries can still be useful, but they cannot dominate the
+  // lead card simply because Google re-indexed an old static page today.
+  if (article.transport === 'google-news-site' && !article.publishedAtVerified) {
+    const unverifiedCeiling = urgency === 'high' || urgency === 'critical' ? 82 : 64;
+    score = Math.min(score, unverifiedCeiling);
+  }
+
+  return clamp(score);
+}
+
 export function classifyArmeniaArticle(article: RawArmeniaArticle): ClassifiedArmeniaArticle | null {
+  const quality = assessArmeniaArticleQuality(article);
+  if (!quality.accepted) return null;
+
   const { source } = article;
   const text = normalize([article.title, article.summary ?? ''].join(' '));
   const mentionsArmenia = containsAny(text, DIRECT_ARMENIA_TERMS);
@@ -194,15 +279,20 @@ export function classifyArmeniaArticle(article: RawArmeniaArticle): ClassifiedAr
   }
 
   const domains = classifyDomains(text, source);
+  const domain = primaryDomain(domains);
   const urgency = urgencyFor(text);
-  const urgencyBoost = urgency === 'critical' ? 8 : urgency === 'high' ? 5 : urgency === 'medium' ? 2 : 0;
+  const freshnessScore = armeniaFreshnessScore(article);
+  const importanceScore = importanceFor(article, text, domain, urgency, freshnessScore, quality.qualityScore);
 
   return {
     ...article,
     domains,
-    primaryDomain: primaryDomain(domains),
+    primaryDomain: domain,
     scope,
-    relevanceScore: Math.min(100, relevanceScore + urgencyBoost),
+    relevanceScore,
+    importanceScore,
+    freshnessScore,
+    qualityScore: quality.qualityScore,
     relevanceReasons: reasons,
     urgency,
   };
