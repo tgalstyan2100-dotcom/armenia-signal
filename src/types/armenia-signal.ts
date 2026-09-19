@@ -83,3 +83,69 @@ export interface ArmeniaEventRecord {
   verification: ArmeniaEventVerification;
   evidence: readonly ArmeniaEventEvidence[];
 }
+
+export type ArmeniaContentTransport = 'direct-rss' | 'google-news-site';
+
+export type ArmeniaSourceHealthState = 'healthy' | 'degraded' | 'unavailable';
+
+export type ArmeniaSignalUrgency = 'low' | 'medium' | 'high' | 'critical';
+
+export type ArmeniaContentRelevanceReason =
+  | 'armenia-mention'
+  | 'armenia-location'
+  | 'armenia-source'
+  | 'south-caucasus'
+  | 'external-impact';
+
+export interface ArmeniaSourceHealth {
+  sourceId: string;
+  sourceName: string;
+  host: string;
+  state: ArmeniaSourceHealthState;
+  primaryTransport: ArmeniaContentTransport;
+  transportUsed?: ArmeniaContentTransport;
+  itemCount: number;
+  relevantItemCount: number;
+  checkedAt: string;
+  errorCode?: 'timeout' | 'http' | 'network' | 'parse' | 'empty';
+}
+
+export interface ArmeniaContentEvidence {
+  sourceId: string;
+  sourceName: string;
+  url: string;
+  title: string;
+  publishedAt?: string;
+  observedAt: string;
+  transport: ArmeniaContentTransport;
+  provenance: ArmeniaSourceProvenance;
+  isPrimaryRecord: boolean;
+}
+
+export interface ArmeniaContentSignal {
+  id: string;
+  title: string;
+  summary?: string;
+  url: string;
+  sourceId: string;
+  sourceName: string;
+  publishedAt?: string;
+  observedAt: string;
+  primaryDomain: ArmeniaSignalDomain;
+  domains: readonly ArmeniaSignalDomain[];
+  scope: ArmeniaEventScope;
+  relevanceScore: number;
+  relevanceReasons: readonly ArmeniaContentRelevanceReason[];
+  urgency: ArmeniaSignalUrgency;
+  provenance: ArmeniaSourceProvenance;
+  confidence: number;
+  corroborationCount: number;
+  evidence: readonly ArmeniaContentEvidence[];
+}
+
+export interface ArmeniaContentSnapshot {
+  version: 1;
+  generatedAt: string;
+  signals: readonly ArmeniaContentSignal[];
+  sources: readonly ArmeniaSourceHealth[];
+}
