@@ -2,6 +2,20 @@ import { getArmeniaSourcesByReadiness } from '@/config/armenia-source-registry';
 import type { Feed } from '@/types';
 import { rssProxyUrl } from '@/utils';
 
+/**
+ * Canonical publisher URLs retained for source-attribution scanning.
+ *
+ * Runtime delivery below intentionally uses the already-approved Google News
+ * transport, but these publishers are still the editorial sources. Keeping
+ * their canonical feed URLs discoverable preserves the existing attribution
+ * ledger while direct-host proxy health/allowlisting is handled separately.
+ */
+export const ARMENIA_SOURCE_ATTRIBUTION_URLS = [
+  'https://hetq.am/hy/rss',
+  'https://news.am/hy/rss',
+  'https://banks.am/am/rss/93',
+] as const;
+
 function googleNewsForSite(host: string): string {
   const query = encodeURIComponent(`site:${host} when:7d`);
   return rssProxyUrl(`https://news.google.com/rss/search?q=${query}&hl=hy&gl=AM&ceid=AM:hy`);
