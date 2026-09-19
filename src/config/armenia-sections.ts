@@ -28,6 +28,15 @@ export const ARMENIA_UI = {
   alerts: { hy: 'Ահազանգեր', ru: 'Сигналы', en: 'Alerts' },
 } satisfies Record<string, LocalizedText>;
 
+/**
+ * Stabilized Armenia-first workspace.
+ *
+ * Until a section has a dedicated Armenia-native structured-data panel, it
+ * intentionally renders only the Armenia signal panel. This prevents generic
+ * World Monitor panels (US politics, global markets, generic FX, etc.) from
+ * being presented as if they described Armenia. The map stays on Home; the
+ * internal map section is kept only for mobile/backward-compatible routing.
+ */
 export const ARMENIA_SECTIONS: readonly ArmeniaSection[] = [
   {
     id: 'home', label: { hy: 'Գլխավոր', ru: 'Главная', en: 'Home' }, shortLabel: { hy: 'Գլխավոր', ru: 'Главная', en: 'Home' },
@@ -36,54 +45,55 @@ export const ARMENIA_SECTIONS: readonly ArmeniaSection[] = [
   },
   {
     id: 'map', label: { hy: 'Քարտեզ', ru: 'Карта', en: 'Map' }, shortLabel: { hy: 'Քարտեզ', ru: 'Карта', en: 'Map' },
-    panels: ['map', 'armenia-home', 'insights'],
+    panels: ['map', 'armenia-home'],
     layers: ['hotspots', 'conflicts', 'military', 'bases', 'nuclear', 'sanctions', 'economic', 'outages', 'weather', 'natural', 'protests', 'ucdpEvents', 'waterways', 'pipelines'], timeRange: '48h',
   },
   {
     id: 'security', label: { hy: 'Անվտանգություն', ru: 'Безопасность', en: 'Security' }, shortLabel: { hy: 'Անվտանգություն', ru: 'Безопасность', en: 'Security' },
-    panels: ['armenia-home', 'insights', 'strategic-posture', 'security-advisories', 'internet-disruptions'],
+    panels: ['armenia-home'],
     layers: ['conflicts', 'hotspots', 'military', 'bases', 'nuclear', 'protests', 'ucdpEvents', 'sanctions', 'outages', 'cyberThreats', 'natural', 'ciiChoropleth'], timeRange: '24h',
   },
   {
     id: 'economy', label: { hy: 'Տնտեսություն', ru: 'Экономика', en: 'Economy' }, shortLabel: { hy: 'Տնտեսություն', ru: 'Экономика', en: 'Economy' },
-    panels: ['armenia-home', 'consumer-prices', 'fx', 'fuel-prices', 'economic', 'markets', 'energy-complex', 'supply-chain', 'trade-policy', 'sanctions-pressure', 'economic-correlation'],
+    panels: ['armenia-home'],
     layers: ['economic', 'stockExchanges', 'centralBanks', 'financialCenters', 'tradeRoutes', 'pipelines', 'waterways', 'commodityHubs', 'commodityPorts', 'sanctions', 'outages'], timeRange: '7d',
   },
   {
     id: 'politics', label: { hy: 'Քաղաքականություն', ru: 'Политика', en: 'Politics' }, shortLabel: { hy: 'Քաղաքականություն', ru: 'Политика', en: 'Politics' },
-    panels: ['armenia-home', 'politics', 'gov', 'thinktanks', 'regional-intelligence'],
+    panels: ['armenia-home'],
     layers: ['hotspots', 'conflicts', 'protests', 'sanctions', 'ucdpEvents', 'economic'], timeRange: '48h',
   },
   {
     id: 'technology', label: { hy: 'Տեխնոլոգիաներ', ru: 'Технологии', en: 'Technology' }, shortLabel: { hy: 'Տեխնոլոգիա', ru: 'Технологии', en: 'Technology' },
-    panels: ['armenia-home', 'tech', 'ai', 'security', 'internet-disruptions', 'startups', 'funding'],
+    panels: ['armenia-home'],
     layers: ['datacenters', 'startupHubs', 'techHQs', 'techEvents', 'cloudRegions', 'cables', 'outages', 'cyberThreats', 'natural'], timeRange: '7d',
   },
   {
     id: 'energy', label: { hy: 'Էներգետիկա', ru: 'Энергетика', en: 'Energy' }, shortLabel: { hy: 'Էներգետիկա', ru: 'Энергетика', en: 'Energy' },
-    panels: ['armenia-home', 'energy', 'energy-complex', 'pipeline-status', 'fuel-shortages', 'energy-disruptions', 'supply-chain'],
+    panels: ['armenia-home'],
     layers: ['pipelines', 'storageFacilities', 'fuelShortages', 'tradeRoutes', 'waterways', 'commodityPorts', 'commodityHubs', 'sanctions', 'fires', 'weather', 'outages', 'natural'], timeRange: '7d', more: true,
   },
   {
     id: 'society', label: { hy: 'Հասարակություն', ru: 'Общество', en: 'Society' }, shortLabel: { hy: 'Հասարակություն', ru: 'Общество', en: 'Society' },
-    panels: ['armenia-home', 'disease-outbreaks', 'displacement', 'climate', 'consumer-prices'],
+    panels: ['armenia-home'],
     layers: ['protests', 'displacement', 'diseaseOutbreaks', 'climate', 'weather', 'natural'], timeRange: '7d', more: true,
   },
   {
     id: 'emergencies', label: { hy: 'Արտակարգ իրավիճակներ', ru: 'Чрезвычайные ситуации', en: 'Emergencies' }, shortLabel: { hy: 'Արտակարգ', ru: 'ЧС', en: 'Emergencies' },
-    panels: ['armenia-home', 'disaster-correlation', 'satellite-fires', 'security-advisories', 'radiation-watch'],
+    panels: ['armenia-home'],
     layers: ['natural', 'weather', 'fires', 'diseaseOutbreaks', 'radiationWatch', 'outages'], timeRange: '24h', more: true,
   },
   {
     id: 'region', label: { hy: 'Տարածաշրջան և աշխարհ', ru: 'Регион и мир', en: 'Region & World' }, shortLabel: { hy: 'Տարածաշրջան', ru: 'Регион и мир', en: 'Region & World' },
-    panels: ['armenia-home', 'politics', 'middleeast', 'europe', 'asia', 'us', 'insights', 'strategic-risk'],
+    panels: ['armenia-home'],
     layers: ['conflicts', 'hotspots', 'protests', 'sanctions', 'economic', 'ucdpEvents', 'outages'], timeRange: '48h', more: true,
   },
 ] as const;
 
 // The dedicated map section remains internally available for mobile/backward
-// compatibility, but desktop navigation exposes only one map-bearing entry:
-// Home. This removes the duplicate Home + Map tabs without deleting map logic.
+// compatibility, but visible desktop navigation exposes only one map-bearing
+// entry: Home. This removes the duplicate Home + Map tabs without deleting
+// existing deep-link/state compatibility.
 export const ARMENIA_PRIMARY_SECTIONS = ARMENIA_SECTIONS.filter((section) => !section.more && section.id !== 'map');
 export const ARMENIA_MORE_SECTIONS = ARMENIA_SECTIONS.filter((section) => section.more && section.id !== 'map');
 export const ARMENIA_LANGUAGE_STORAGE_KEY = 'armenia-signal-language-v1';
