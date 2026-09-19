@@ -2,6 +2,7 @@ import {
   getArmeniaSourcesByReadiness,
 } from '../../src/config/armenia-source-registry';
 import type {
+  ArmeniaContentLanguage,
   ArmeniaContentSnapshot,
   ArmeniaSourceHealth,
 } from '../../src/types/armenia-signal';
@@ -13,26 +14,42 @@ const SNAPSHOT_CACHE_TTL_MS = 2 * 60 * 1_000;
 const MAX_SIGNAL_AGE_MS = 14 * 24 * 60 * 60 * 1_000;
 const MAX_SIGNALS = 80;
 
-let cachedSnapshot: ArmeniaContentSnapshot | null = null;
-let cachedAt = 0;
-let inFlight: Promise<ArmeniaContentSnapshot> | null = null;
+interface CacheEntry {
+  snapshot: ArmeniaContentSnapshot | null;
+  cachedAt: number;
+  inFlight: Promise<ArmeniaContentSnapshot> | null;
+}
 
-function isFreshEnough(publishedAt: string | undefined, now: number): boolean {
-  if (!publishedAt) return true;
-  const timestamp = Date.parse(publishedAt);
-  if (!Number.isFinite(timestamp)) return true;
+const caches = new Map<ArmeniaContentLanguage, CacheEntry>();
+
+function cacheFor(language: ArmeniaContentLanguage): CacheEntry {
+  let entry = caches.get(language);
+  if (!entry) {
+    entry = { snapshot: null, cachedAt: 0, inFlight: null };
+    caches.set(language, entry);
+  }
+  return entry;
+}
+
+function isFreshEnough(
+  item: { publishedAt?: string; discoveredAt?: string; observedAt: string },
+  now: number,
+): boolean {
+  const raw = item.publishedAt ?? item.discoveredAt ?? item.observedAt;
+  const timestamp = Date.parse(raw);
+  if (!Number.isFinite(timestamp)) return false;
   if (timestamp > now + 24 * 60 * 60 * 1_000) return false;
   return now - timestamp <= MAX_SIGNAL_AGE_MS;
 }
 
-async function buildSnapshot(): Promise<ArmeniaContentSnapshot> {
+async function buildSnapshot(language: ArmeniaContentLanguage): Promise<ArmeniaContentSnapshot> {
   const sources = getArmeniaSourcesByReadiness('live');
-  const results = await Promise.all(sources.map((source) => fetchArmeniaSource(source)));
+  const results = await Promise.all(sources.map((source) => fetchArmeniaSource(source, language)));
   const now = Date.now();
 
   const classified = results
     .flatMap((result) => result.items)
-    .filter((item) => isFreshEnough(item.publishedAt, now))
+    .filter((item) => isFreshEnough(item, now))
     .map((item) => classifyArmeniaArticle(item))
     .filter((item): item is NonNullable<typeof item> => item !== null);
 
@@ -56,32 +73,35 @@ async function buildSnapshot(): Promise<ArmeniaContentSnapshot> {
 
   return {
     version: 1,
+    language,
     generatedAt: new Date().toISOString(),
-    signals: deduplicateArmeniaArticles(classified).slice(0, MAX_SIGNALS),
+    signals: deduplicateArmeniaArticles(classified, language).slice(0, MAX_SIGNALS),
     sources: health,
   };
 }
 
 export async function getArmeniaContentSnapshot(
-  options: { force?: boolean } = {},
+  options: { force?: boolean; language?: ArmeniaContentLanguage } = {},
 ): Promise<ArmeniaContentSnapshot> {
+  const language = options.language ?? 'hy';
+  const entry = cacheFor(language);
   const now = Date.now();
-  if (!options.force && cachedSnapshot && now - cachedAt < SNAPSHOT_CACHE_TTL_MS) {
-    return cachedSnapshot;
+
+  if (!options.force && entry.snapshot && now - entry.cachedAt < SNAPSHOT_CACHE_TTL_MS) {
+    return entry.snapshot;
   }
+  if (!options.force && entry.inFlight) return entry.inFlight;
 
-  if (!options.force && inFlight) return inFlight;
-
-  const build = buildSnapshot()
+  const build = buildSnapshot(language)
     .then((snapshot) => {
-      cachedSnapshot = snapshot;
-      cachedAt = Date.now();
+      entry.snapshot = snapshot;
+      entry.cachedAt = Date.now();
       return snapshot;
     })
     .finally(() => {
-      if (inFlight === build) inFlight = null;
+      if (entry.inFlight === build) entry.inFlight = null;
     });
 
-  inFlight = build;
+  entry.inFlight = build;
   return build;
 }
