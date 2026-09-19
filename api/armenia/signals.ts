@@ -1,4 +1,4 @@
-import type { ArmeniaSignalDomain } from '../../src/types/armenia-signal';
+import type { ArmeniaContentLanguage, ArmeniaSignalDomain } from '../../src/types/armenia-signal';
 import { getArmeniaContentSnapshot } from '../../server/armenia/content-engine';
 
 export const config = { runtime: 'edge' };
@@ -15,6 +15,10 @@ const VALID_DOMAINS = new Set<ArmeniaSignalDomain>([
   'regional',
 ]);
 
+function languageFrom(value: string | null): ArmeniaContentLanguage {
+  return value === 'ru' || value === 'en' ? value : 'hy';
+}
+
 function headers(): Record<string, string> {
   return {
     'Content-Type': 'application/json; charset=utf-8',
@@ -26,33 +30,25 @@ function headers(): Record<string, string> {
 }
 
 export default async function handler(req: Request): Promise<Response> {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: headers() });
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: headers() });
   if (req.method !== 'GET') {
-    return new Response(JSON.stringify({ error: 'METHOD_NOT_ALLOWED' }), {
-      status: 405,
-      headers: headers(),
-    });
+    return new Response(JSON.stringify({ error: 'METHOD_NOT_ALLOWED' }), { status: 405, headers: headers() });
   }
+
+  const url = new URL(req.url);
+  const language = languageFrom(url.searchParams.get('lang'));
 
   try {
-    const url = new URL(req.url);
     const section = url.searchParams.get('section');
     const requestedLimit = Number(url.searchParams.get('limit') ?? 80);
-    const limit = Number.isFinite(requestedLimit)
-      ? Math.max(1, Math.min(100, Math.floor(requestedLimit)))
-      : 80;
+    const limit = Number.isFinite(requestedLimit) ? Math.max(1, Math.min(100, Math.floor(requestedLimit))) : 80;
 
-    const snapshot = await getArmeniaContentSnapshot();
+    const snapshot = await getArmeniaContentSnapshot({ language });
     const signals = section && VALID_DOMAINS.has(section as ArmeniaSignalDomain)
       ? snapshot.signals.filter((signal) => signal.domains.includes(section as ArmeniaSignalDomain))
       : snapshot.signals;
 
-    return new Response(JSON.stringify({
-      ...snapshot,
-      signals: signals.slice(0, limit),
-    }), {
+    return new Response(JSON.stringify({ ...snapshot, signals: signals.slice(0, limit) }), {
       status: 200,
       headers: headers(),
     });
@@ -61,15 +57,13 @@ export default async function handler(req: Request): Promise<Response> {
     return new Response(JSON.stringify({
       error: 'ARMENIA_CONTENT_UNAVAILABLE',
       version: 1,
+      language,
       generatedAt: new Date().toISOString(),
       signals: [],
       sources: [],
     }), {
       status: 503,
-      headers: {
-        ...headers(),
-        'Cache-Control': 'no-store',
-      },
+      headers: { ...headers(), 'Cache-Control': 'no-store' },
     });
   }
 }
