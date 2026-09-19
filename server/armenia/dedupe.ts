@@ -1,5 +1,6 @@
 import type {
   ArmeniaContentEvidence,
+  ArmeniaContentLanguage,
   ArmeniaContentSignal,
   ArmeniaEventScope,
   ArmeniaSignalDomain,
@@ -75,19 +76,30 @@ function stableHash(value: string): string {
   return (hash >>> 0).toString(16).padStart(8, '0');
 }
 
-function timestamp(value?: string): number {
-  if (!value) return 0;
-  const parsed = Date.parse(value);
+function timestamp(item: Pick<ClassifiedArmeniaArticle, 'publishedAt' | 'discoveredAt' | 'observedAt'>): number {
+  const raw = item.publishedAt ?? item.discoveredAt ?? item.observedAt;
+  const parsed = Date.parse(raw);
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function chooseLead(cluster: readonly ClassifiedArmeniaArticle[]): ClassifiedArmeniaArticle {
+function chooseLead(
+  cluster: readonly ClassifiedArmeniaArticle[],
+  preferredLanguage?: ArmeniaContentLanguage,
+): ClassifiedArmeniaArticle {
   return [...cluster].sort((left, right) => {
+    const importance = right.importanceScore - left.importanceScore;
+    if (Math.abs(importance) > 12) return importance;
+    if (preferredLanguage) {
+      const leftMatch = left.language === preferredLanguage || left.language === 'mixed' ? 1 : 0;
+      const rightMatch = right.language === preferredLanguage || right.language === 'mixed' ? 1 : 0;
+      if (rightMatch !== leftMatch) return rightMatch - leftMatch;
+    }
+    if (importance !== 0) return importance;
+    const quality = right.qualityScore - left.qualityScore;
+    if (quality !== 0) return quality;
     const provenance = PROVENANCE_RANK[right.source.provenance] - PROVENANCE_RANK[left.source.provenance];
     if (provenance !== 0) return provenance;
-    const relevance = right.relevanceScore - left.relevanceScore;
-    if (relevance !== 0) return relevance;
-    return timestamp(right.publishedAt) - timestamp(left.publishedAt);
+    return timestamp(right) - timestamp(left);
   })[0]!;
 }
 
@@ -105,9 +117,9 @@ function strongestUrgency(cluster: readonly ClassifiedArmeniaArticle[]): Armenia
 
 function confidenceFor(cluster: readonly ClassifiedArmeniaArticle[], lead: ClassifiedArmeniaArticle): number {
   const uniqueSources = new Set(cluster.map((item) => item.source.id)).size;
-  if (lead.source.provenance === 'official-primary' || lead.source.provenance === 'official-data') {
-    return uniqueSources > 1 ? 0.99 : 0.96;
-  }
+  const official = lead.source.provenance === 'official-primary' || lead.source.provenance === 'official-data';
+  if (official && lead.publishedAtVerified) return uniqueSources > 1 ? 0.99 : 0.96;
+  if (official) return uniqueSources > 1 ? 0.94 : 0.88;
   if (uniqueSources >= 3) return 0.94;
   if (uniqueSources === 2) return 0.86;
   return lead.source.provenance === 'public-newswire' ? 0.78 : 0.70;
@@ -120,9 +132,12 @@ function evidenceFor(item: ClassifiedArmeniaArticle): ArmeniaContentEvidence {
     url: item.url,
     title: item.title,
     ...(item.publishedAt ? { publishedAt: item.publishedAt } : {}),
+    ...(item.discoveredAt ? { discoveredAt: item.discoveredAt } : {}),
     observedAt: item.observedAt,
     transport: item.transport,
     provenance: item.source.provenance,
+    language: item.language,
+    publishedAtVerified: item.publishedAtVerified,
     isPrimaryRecord: item.source.provenance === 'official-primary' || item.source.provenance === 'official-data',
   };
 }
@@ -133,6 +148,7 @@ function unionDomains(cluster: readonly ClassifiedArmeniaArticle[]): ArmeniaSign
 
 export function deduplicateArmeniaArticles(
   input: readonly ClassifiedArmeniaArticle[],
+  preferredLanguage?: ArmeniaContentLanguage,
 ): ArmeniaContentSignal[] {
   const clusters: ClassifiedArmeniaArticle[][] = [];
 
@@ -143,24 +159,29 @@ export function deduplicateArmeniaArticles(
   }
 
   const signals = clusters.map((cluster) => {
-    const lead = chooseLead(cluster);
+    const lead = chooseLead(cluster, preferredLanguage);
     const uniqueBySource = new Map<string, ClassifiedArmeniaArticle>();
     for (const item of cluster) {
       const current = uniqueBySource.get(item.source.id);
-      if (!current || timestamp(item.publishedAt) > timestamp(current.publishedAt)) {
+      if (!current || timestamp(item) > timestamp(current)) {
         uniqueBySource.set(item.source.id, item);
       }
     }
+
     const evidence = [...uniqueBySource.values()]
       .sort((a, b) => PROVENANCE_RANK[b.source.provenance] - PROVENANCE_RANK[a.source.provenance])
       .map(evidenceFor);
     const corroborationCount = evidence.length;
-    const corroborationBoost = Math.min(8, Math.max(0, corroborationCount - 1) * 3);
+    const corroborationBoost = Math.min(8, Math.max(0, corroborationCount - 1) * 2);
     const domains = unionDomains(cluster);
     const observedAt = [...cluster]
       .map((item) => item.observedAt)
       .sort()
       .at(-1) ?? lead.observedAt;
+    const relevanceScore = Math.max(...cluster.map((item) => item.relevanceScore));
+    const freshnessScore = Math.max(...cluster.map((item) => item.freshnessScore));
+    const qualityScore = Math.max(...cluster.map((item) => item.qualityScore));
+    const importanceScore = Math.min(100, Math.max(...cluster.map((item) => item.importanceScore)) + corroborationBoost);
 
     return {
       id: `am-${stableHash(normalizeTitle(lead.title))}`,
@@ -170,11 +191,17 @@ export function deduplicateArmeniaArticles(
       sourceId: lead.source.id,
       sourceName: lead.source.name,
       ...(lead.publishedAt ? { publishedAt: lead.publishedAt } : {}),
+      ...(lead.discoveredAt ? { discoveredAt: lead.discoveredAt } : {}),
       observedAt,
+      language: lead.language,
+      publishedAtVerified: lead.publishedAtVerified,
       primaryDomain: lead.primaryDomain,
       domains,
       scope: strongestScope(cluster),
-      relevanceScore: Math.min(100, lead.relevanceScore + corroborationBoost),
+      relevanceScore,
+      importanceScore,
+      freshnessScore,
+      qualityScore,
       relevanceReasons: [...new Set(cluster.flatMap((item) => item.relevanceReasons))],
       urgency: strongestUrgency(cluster),
       provenance: lead.source.provenance,
@@ -185,8 +212,14 @@ export function deduplicateArmeniaArticles(
   });
 
   return signals.sort((left, right) => {
-    const score = right.relevanceScore - left.relevanceScore;
-    if (score !== 0) return score;
-    return timestamp(right.publishedAt) - timestamp(left.publishedAt);
+    const importance = right.importanceScore - left.importanceScore;
+    if (importance !== 0) return importance;
+    const urgency = URGENCY_RANK[right.urgency] - URGENCY_RANK[left.urgency];
+    if (urgency !== 0) return urgency;
+    const freshness = right.freshnessScore - left.freshnessScore;
+    if (freshness !== 0) return freshness;
+    const leftTime = Date.parse(left.publishedAt ?? left.discoveredAt ?? left.observedAt);
+    const rightTime = Date.parse(right.publishedAt ?? right.discoveredAt ?? right.observedAt);
+    return (Number.isFinite(rightTime) ? rightTime : 0) - (Number.isFinite(leftTime) ? leftTime : 0);
   });
 }
