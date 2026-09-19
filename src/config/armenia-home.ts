@@ -16,13 +16,6 @@ export interface ArmeniaRankedSignal {
   score: number;
 }
 
-const ARMENIA_DOMESTIC_SOURCE_NAMES = new Set(
-  ARMENIA_SOURCE_REGISTRY
-    .filter((source) => source.geography === 'armenia')
-    .flatMap((source) => [source.name, ...(source.aliases ?? [])])
-    .map((name) => name.toLocaleLowerCase()),
-);
-
 const ARMENIA_SOURCE_BY_NAME = new Map<string, ArmeniaSourceDefinition>();
 for (const source of ARMENIA_SOURCE_REGISTRY) {
   ARMENIA_SOURCE_BY_NAME.set(source.name.toLocaleLowerCase(), source);
@@ -48,14 +41,17 @@ const DIRECT_ARMENIA_TERMS = [
   'армени', 'ереван', 'гюмри', 'ванадзор', 'сюник', 'арцах', 'карабах', 'севан',
 ] as const;
 
-const SOUTH_CAUCASUS_TERMS = [
-  'south caucasus', 'southern caucasus', 'transcaucasia', 'հարավային կովկաս', 'южный кавказ', 'закавказ',
+const ARMENIA_LOCAL_CONTEXT_TERMS = [
+  'government of armenia', 'armenian government', 'national assembly of armenia', 'armenian parliament',
+  'central bank of armenia', 'armenian dram', 'nikol pashinyan', 'prime minister pashinyan',
+  'yerevan municipality', 'armenian armed forces', 'constitutional court of armenia', 'armenian ministry',
+  'կառավար', 'ազգային ժողով', 'կենտրոնական բանկ', 'կբ', 'դրամ', 'վարչապետ', 'նախարար', 'քաղաքապետ', 'սահմանադրական դատարան', 'պն', 'ագն',
+  'правительств армен', 'национальн собрание армен', 'центральн банк армен', 'армянск драм',
+  'пашинян', 'мэрия ереван', 'вооруженн сил армен', 'конституционн суд армен',
 ] as const;
 
-const CORE_NEIGHBOR_TERMS = [
-  'georgia', 'tbilisi', 'azerbaijan', 'baku', 'turkey', 'türkiye', 'ankara', 'iran', 'tehran', 'russia', 'moscow',
-  'վրաստան', 'թբիլիսի', 'ադրբեջան', 'բաքու', 'թուրքիա', 'անկարա', 'իրան', 'թեհրան', 'ռուսաստան', 'մոսկվա',
-  'грузи', 'тбилиси', 'азербайджан', 'баку', 'турци', 'анкара', 'иран', 'тегеран', 'росси', 'москва',
+const SOUTH_CAUCASUS_TERMS = [
+  'south caucasus', 'southern caucasus', 'transcaucasia', 'հարավային կովկաս', 'южный кавказ', 'закавказ',
 ] as const;
 
 const GLOBAL_POWER_TERMS = [
@@ -98,8 +94,12 @@ function isInsideArmenia(item: NewsItem): boolean {
   return item.lat != null && item.lon != null && item.lat >= 38.8 && item.lat <= 41.4 && item.lon >= 43.4 && item.lon <= 46.7;
 }
 
+function armeniaSource(item: NewsItem): ArmeniaSourceDefinition | null {
+  return ARMENIA_SOURCE_BY_NAME.get(item.source.toLocaleLowerCase()) ?? null;
+}
+
 function sourceFallbackCategory(item: NewsItem): ArmeniaSignalCategory | null {
-  const source = ARMENIA_SOURCE_BY_NAME.get(item.source.toLocaleLowerCase());
+  const source = armeniaSource(item);
   if (!source) return null;
   for (const domain of source.domains) {
     const category = SOURCE_DOMAIN_FALLBACK[domain];
@@ -124,24 +124,30 @@ function primaryCategory(tags: ArmeniaSignalCategory[]): ArmeniaSignalCategory {
 
 function relevance(item: NewsItem, text: string): Pick<ArmeniaRankedSignal, 'scope' | 'reasons'> | null {
   const reasons: ArmeniaRelevanceReason[] = [];
+  const source = armeniaSource(item);
+  const domesticSource = source?.geography === 'armenia';
+  const officialSource = domesticSource
+    && (source.provenance === 'official-primary' || source.provenance === 'official-data');
   const locatedInArmenia = isInsideArmenia(item);
   const mentionsArmenia = containsAny(text, DIRECT_ARMENIA_TERMS);
-  const domesticSource = ARMENIA_DOMESTIC_SOURCE_NAMES.has(item.source.toLocaleLowerCase());
+  const hasLocalInstitutionContext = containsAny(text, ARMENIA_LOCAL_CONTEXT_TERMS);
+
   if (mentionsArmenia) reasons.push('armenia-mention');
   if (locatedInArmenia) reasons.push('armenia-location');
-  if (domesticSource) reasons.push('armenia-source');
+  if (officialSource || (domesticSource && hasLocalInstitutionContext)) {
+    reasons.push('armenia-source');
+  }
+
   if (reasons.length > 0) return { scope: 'armenia', reasons };
 
   const southCaucasus = containsAny(text, SOUTH_CAUCASUS_TERMS);
-  const coreNeighbor = containsAny(text, CORE_NEIGHBOR_TERMS);
   const materialImpact = containsAny(text, IMPACT_TERMS);
-  if (southCaucasus && materialImpact) return { scope: 'region', reasons: ['south-caucasus'] };
+  if (!southCaucasus || !materialImpact) return null;
+
   const externalPower = containsAny(text, GLOBAL_POWER_TERMS);
-  if (externalPower && (southCaucasus || coreNeighbor) && materialImpact) {
-    return { scope: 'world-impact', reasons: ['external-impact'] };
-  }
-  if (coreNeighbor && materialImpact) return { scope: 'region', reasons: ['core-neighbor'] };
-  return null;
+  return externalPower
+    ? { scope: 'world-impact', reasons: ['external-impact'] }
+    : { scope: 'region', reasons: ['south-caucasus'] };
 }
 
 function recencyScore(item: NewsItem, nowMs: number): number {
