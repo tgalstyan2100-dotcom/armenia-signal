@@ -73,11 +73,15 @@
   },
   "deferred": {
     "total": {
-      "raw": 1368916
+      "raw": 1392103
     },
     "chunks": {
       "App": {
-        "raw": 897874,
+        "raw": 910430,
+        "files": 1
+      },
+      "armenia-map-ui": {
+        "raw": 128730,
         "files": 1
       },
       "base": {
@@ -102,10 +106,6 @@
       },
       "feeds": {
         "raw": 102203,
-        "files": 1
-      },
-      "gdelt-intel": {
-        "raw": 118099,
         "files": 1
       },
       "index": {
