@@ -1,6 +1,11 @@
+import type { ArmeniaContentLanguage } from '../../src/types/armenia-signal';
 import { getArmeniaContentSnapshot } from '../../server/armenia/content-engine';
 
 export const config = { runtime: 'edge' };
+
+function languageFrom(value: string | null): ArmeniaContentLanguage {
+  return value === 'ru' || value === 'en' ? value : 'hy';
+}
 
 function headers(): Record<string, string> {
   return {
@@ -13,39 +18,31 @@ function headers(): Record<string, string> {
 }
 
 export default async function handler(req: Request): Promise<Response> {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: headers() });
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: headers() });
   if (req.method !== 'GET') {
-    return new Response(JSON.stringify({ error: 'METHOD_NOT_ALLOWED' }), {
-      status: 405,
-      headers: headers(),
-    });
+    return new Response(JSON.stringify({ error: 'METHOD_NOT_ALLOWED' }), { status: 405, headers: headers() });
   }
 
+  const language = languageFrom(new URL(req.url).searchParams.get('lang'));
   try {
-    const snapshot = await getArmeniaContentSnapshot();
+    const snapshot = await getArmeniaContentSnapshot({ language });
     return new Response(JSON.stringify({
       version: snapshot.version,
+      language: snapshot.language,
       generatedAt: snapshot.generatedAt,
       sources: snapshot.sources,
-    }), {
-      status: 200,
-      headers: headers(),
-    });
+    }), { status: 200, headers: headers() });
   } catch (error) {
     console.error('[Armenia Signal] source health failed:', error);
     return new Response(JSON.stringify({
       error: 'ARMENIA_SOURCE_HEALTH_UNAVAILABLE',
       version: 1,
+      language,
       generatedAt: new Date().toISOString(),
       sources: [],
     }), {
       status: 503,
-      headers: {
-        ...headers(),
-        'Cache-Control': 'no-store',
-      },
+      headers: { ...headers(), 'Cache-Control': 'no-store' },
     });
   }
 }
