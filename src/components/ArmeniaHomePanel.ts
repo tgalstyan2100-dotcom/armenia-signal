@@ -87,6 +87,8 @@ const LANE_CATEGORIES: Record<'economy' | 'security' | 'technology' | 'region', 
   region: ['society', 'region'],
 };
 
+const ARMENIA_NEWS_SOURCE_NAME_SET = new Set(ARMENIA_NEWS_SOURCE_NAMES);
+
 function readLanguage(): ArmeniaLanguage {
   const stored = safeStorageGet(ARMENIA_LANGUAGE_STORAGE_KEY);
   if (!stored) return 'hy';
@@ -125,6 +127,7 @@ export class ArmeniaHomePanel extends Panel {
   private language: ArmeniaLanguage = readLanguage();
   private section: ArmeniaSectionId = readSection();
   private ranked: ArmeniaRankedSignal[] = [];
+  private sourceCounts = new Map<string, number>();
 
   private readonly languageHandler = (event: Event) => {
     const language = (event as CustomEvent<{ language?: unknown }>).detail?.language;
@@ -149,6 +152,13 @@ export class ArmeniaHomePanel extends Panel {
   }
 
   public updateNews(items: NewsItem[]): void {
+    const sourceCounts = new Map<string, number>();
+    for (const item of items) {
+      if (!ARMENIA_NEWS_SOURCE_NAME_SET.has(item.source)) continue;
+      sourceCounts.set(item.source, (sourceCounts.get(item.source) ?? 0) + 1);
+    }
+    this.sourceCounts = sourceCounts;
+
     this.ranked = rankArmeniaNews(items);
     const urgent = this.ranked.some((signal) => signal.item.threat?.level === 'critical' || signal.item.threat?.level === 'high');
     this.setSeverity(urgent ? 'high' : this.ranked.length > 0 ? 'low' : 'none');
@@ -171,9 +181,7 @@ export class ArmeniaHomePanel extends Panel {
 
     const economyCount = visibleSignals.filter((signal) => signal.tags.includes('economy') || signal.tags.includes('energy')).length;
     const urgentCount = visibleSignals.filter((signal) => signal.item.threat?.level === 'critical' || signal.item.threat?.level === 'high').length;
-    const sourceCounts = new Map<string, number>();
-    for (const signal of this.ranked) sourceCounts.set(signal.item.source, (sourceCounts.get(signal.item.source) ?? 0) + 1);
-    const activeSourceCount = ARMENIA_NEWS_SOURCE_NAMES.filter((source) => (sourceCounts.get(source) ?? 0) > 0).length;
+    const activeSourceCount = ARMENIA_NEWS_SOURCE_NAMES.filter((source) => (this.sourceCounts.get(source) ?? 0) > 0).length;
 
     this.setContentNodes(
       h('div', { className: 'armenia-home' },
@@ -196,7 +204,7 @@ export class ArmeniaHomePanel extends Panel {
           ),
           h('div', { className: 'armenia-home__source-list' },
             ...ARMENIA_NEWS_SOURCE_NAMES.map((source) => {
-              const count = sourceCounts.get(source) ?? 0;
+              const count = this.sourceCounts.get(source) ?? 0;
               return h('span', {
                 className: `armenia-home__source${count > 0 ? ' armenia-home__source--active' : ''}`,
               }, source, h('small', null, String(count)));
