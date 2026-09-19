@@ -10,12 +10,13 @@ import {
 } from '@/config/armenia-sections';
 import {
   filterArmeniaSignalsForSection,
-  rankArmeniaNews,
   type ArmeniaRankedSignal,
   type ArmeniaRelevanceReason,
   type ArmeniaSignalCategory,
 } from '@/config/armenia-home';
 import { ARMENIA_NEWS_SOURCE_NAMES } from '@/config/armenia-feeds';
+import { fetchArmeniaContent } from '@/services/armenia-news';
+import type { ArmeniaSourceHealth } from '@/types/armenia-signal';
 import type { NewsItem } from '@/types';
 import { h } from '@/utils/dom-utils';
 import { sanitizeUrl } from '@/utils/sanitize';
@@ -56,7 +57,7 @@ const COPY: Record<ArmeniaLanguage, Copy> = {
     emptyDetail: 'Բլոկը չենք լրացնում պատահական համաշխարհային լուրերով։', source: 'Բացել աղբյուրը', direct: 'Հայաստան', regional: 'Տարածաշրջան', external: 'Արտաքին ազդեցություն',
     focusDescription: 'Միայն այս բաժնին վերաբերող և Հայաստանի վրա ազդեցություն ունեցող ազդակներ։', focusList: 'Վերջին ազդակներ',
     localSources: 'Հայկական աղբյուրներ', activeSources: 'ակտիվ',
-    reason: { 'armenia-mention': 'Հայաստանի ուղղակի հիշատակում', 'armenia-location': 'Հայաստանի տարածք', 'armenia-source': 'Հայկական սկզբնաղբյուր', 'south-caucasus': 'Հարավային Կովկաս', 'core-neighbor': 'Հարևան երկրից նյութական ազդեցություն', 'external-impact': 'ԱՄՆ/ԵՄ/Չինաստան՝ տարածաշրջանային ազդեցություն' },
+    reason: { 'armenia-mention': 'Հայաստանի ուղղակի հիշատակում', 'armenia-location': 'Հայաստանի տարածք', 'armenia-source': 'Հայկական սկզբնաղբյուր', 'south-caucasus': 'Հարավային Կովկաս', 'core-neighbor': 'Հարևան երկրից նյութական ազդեցություն', 'external-impact': 'Արտաքին ազդեցություն Հայաստանի վրա' },
   },
   ru: {
     panelTitle: 'АРМЕНИЯ: ЖИВЫЕ СИГНАЛЫ', eyebrow: 'ARMENIA / LIVE SIGNALS', title: 'Главное для решений',
@@ -66,7 +67,7 @@ const COPY: Record<ArmeniaLanguage, Copy> = {
     emptyDetail: 'Мы не заполняем блок случайными мировыми новостями.', source: 'Открыть источник', direct: 'Армения', regional: 'Регион', external: 'Внешнее влияние',
     focusDescription: 'Только сигналы этого раздела, способные повлиять на Армению.', focusList: 'Последние сигналы',
     localSources: 'Армянские источники', activeSources: 'активны',
-    reason: { 'armenia-mention': 'Прямое упоминание Армении', 'armenia-location': 'Территория Армении', 'armenia-source': 'Армянский первоисточник', 'south-caucasus': 'Южный Кавказ', 'core-neighbor': 'Существенное влияние соседней страны', 'external-impact': 'Влияние США/ЕС/Китая на регион' },
+    reason: { 'armenia-mention': 'Прямое упоминание Армении', 'armenia-location': 'Территория Армении', 'armenia-source': 'Армянский первоисточник', 'south-caucasus': 'Южный Кавказ', 'core-neighbor': 'Влияние соседней страны', 'external-impact': 'Внешнее влияние на Армению' },
   },
   en: {
     panelTitle: 'ARMENIA LIVE SIGNALS', eyebrow: 'ARMENIA / LIVE SIGNALS', title: 'What matters for decisions',
@@ -76,7 +77,7 @@ const COPY: Record<ArmeniaLanguage, Copy> = {
     emptyDetail: 'We will not fill this space with unrelated global headlines.', source: 'Open source', direct: 'Armenia', regional: 'Region', external: 'External impact',
     focusDescription: 'Only signals in this section with material impact on Armenia.', focusList: 'Latest signals',
     localSources: 'Armenian sources', activeSources: 'active',
-    reason: { 'armenia-mention': 'Direct Armenia mention', 'armenia-location': 'Located in Armenia', 'armenia-source': 'Armenian primary source', 'south-caucasus': 'South Caucasus impact', 'core-neighbor': 'Material impact from a core neighbor', 'external-impact': 'US/EU/China regional impact' },
+    reason: { 'armenia-mention': 'Direct Armenia mention', 'armenia-location': 'Located in Armenia', 'armenia-source': 'Armenian primary source', 'south-caucasus': 'South Caucasus impact', 'core-neighbor': 'Neighbor-country impact', 'external-impact': 'External impact on Armenia' },
   },
 };
 
@@ -86,8 +87,6 @@ const LANE_CATEGORIES: Record<'economy' | 'security' | 'technology' | 'region', 
   technology: ['technology'],
   region: ['society', 'region'],
 };
-
-const ARMENIA_NEWS_SOURCE_NAME_SET = new Set(ARMENIA_NEWS_SOURCE_NAMES);
 
 function readLanguage(): ArmeniaLanguage {
   const stored = safeStorageGet(ARMENIA_LANGUAGE_STORAGE_KEY);
@@ -127,7 +126,8 @@ export class ArmeniaHomePanel extends Panel {
   private language: ArmeniaLanguage = readLanguage();
   private section: ArmeniaSectionId = readSection();
   private ranked: ArmeniaRankedSignal[] = [];
-  private sourceCounts = new Map<string, number>();
+  private sourceHealth = new Map<string, ArmeniaSourceHealth>();
+  private contentLoad: Promise<void> | null = null;
 
   private readonly languageHandler = (event: Event) => {
     const language = (event as CustomEvent<{ language?: unknown }>).detail?.language;
@@ -149,24 +149,42 @@ export class ArmeniaHomePanel extends Panel {
     window.addEventListener('armenia:language-change', this.languageHandler);
     window.addEventListener('armenia:section-change', this.sectionHandler);
     this.render();
+    void this.refreshContent();
   }
 
-  public updateNews(items: NewsItem[]): void {
-    const sourceCounts = new Map<string, number>();
-    for (const item of items) {
-      if (!ARMENIA_NEWS_SOURCE_NAME_SET.has(item.source)) continue;
-      sourceCounts.set(item.source, (sourceCounts.get(item.source) ?? 0) + 1);
-    }
-    this.sourceCounts = sourceCounts;
-
-    this.ranked = rankArmeniaNews(items);
-    const urgent = this.ranked.some((signal) => signal.item.threat?.level === 'critical' || signal.item.threat?.level === 'high');
-    this.setSeverity(urgent ? 'high' : this.ranked.length > 0 ? 'low' : 'none');
-    this.render();
+  /**
+   * Legacy compatibility hook used by the global news loader.
+   * ArmeniaHomePanel deliberately ignores the global allNews corpus.
+   */
+  public updateNews(_items: NewsItem[]): void {
+    void this.refreshContent();
   }
 
   public hasData(): boolean {
     return this.ranked.length > 0;
+  }
+
+  private async refreshContent(): Promise<void> {
+    if (this.contentLoad) return this.contentLoad;
+    this.contentLoad = fetchArmeniaContent()
+      .then((snapshot) => {
+        this.ranked = snapshot.signals;
+        this.sourceHealth = new Map(snapshot.sources.map((source) => [source.sourceName, source]));
+        const urgent = this.ranked.some((signal) => signal.item.isAlert);
+        this.setSeverity(urgent ? 'high' : this.ranked.length > 0 ? 'low' : 'none');
+        this.render();
+      })
+      .catch((error) => {
+        console.warn('[Armenia Signal] Content API unavailable:', error);
+        if (this.ranked.length === 0) {
+          this.setSeverity('none');
+          this.render();
+        }
+      })
+      .finally(() => {
+        this.contentLoad = null;
+      });
+    return this.contentLoad;
   }
 
   private render(): void {
@@ -180,8 +198,11 @@ export class ArmeniaHomePanel extends Panel {
     this.setDataBadge(visibleSignals.length > 0 ? 'live' : 'unavailable');
 
     const economyCount = visibleSignals.filter((signal) => signal.tags.includes('economy') || signal.tags.includes('energy')).length;
-    const urgentCount = visibleSignals.filter((signal) => signal.item.threat?.level === 'critical' || signal.item.threat?.level === 'high').length;
-    const activeSourceCount = ARMENIA_NEWS_SOURCE_NAMES.filter((source) => (this.sourceCounts.get(source) ?? 0) > 0).length;
+    const urgentCount = visibleSignals.filter((signal) => signal.item.isAlert).length;
+    const activeSourceCount = ARMENIA_NEWS_SOURCE_NAMES.filter((sourceName) => {
+      const health = this.sourceHealth.get(sourceName);
+      return health && health.state !== 'unavailable' && health.itemCount > 0;
+    }).length;
 
     this.setContentNodes(
       h('div', { className: 'armenia-home' },
@@ -203,11 +224,14 @@ export class ArmeniaHomePanel extends Panel {
             h('span', null, `${activeSourceCount}/${ARMENIA_NEWS_SOURCE_NAMES.length} ${copy.activeSources}`),
           ),
           h('div', { className: 'armenia-home__source-list' },
-            ...ARMENIA_NEWS_SOURCE_NAMES.map((source) => {
-              const count = this.sourceCounts.get(source) ?? 0;
+            ...ARMENIA_NEWS_SOURCE_NAMES.map((sourceName) => {
+              const health = this.sourceHealth.get(sourceName);
+              const active = Boolean(health && health.state !== 'unavailable' && health.itemCount > 0);
+              const relevantCount = health?.relevantItemCount ?? 0;
               return h('span', {
-                className: `armenia-home__source${count > 0 ? ' armenia-home__source--active' : ''}`,
-              }, source, h('small', null, String(count)));
+                className: `armenia-home__source${active ? ' armenia-home__source--active' : ''}`,
+                title: health ? `${health.state} · ${health.transportUsed ?? health.primaryTransport}` : 'unavailable',
+              }, sourceName, h('small', null, String(relevantCount)));
             }),
           ),
         ),
