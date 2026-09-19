@@ -9,6 +9,9 @@ export type ArmeniaSignalDomain =
   | 'technology'
   | 'regional';
 
+export type ArmeniaContentLanguage = 'hy' | 'ru' | 'en';
+export type ArmeniaDetectedLanguage = ArmeniaContentLanguage | 'mixed' | 'unknown';
+
 export type ArmeniaSourceGeography = 'armenia' | 'regional' | 'international';
 
 export type ArmeniaSourceProvenance =
@@ -40,7 +43,7 @@ export interface ArmeniaSourceDefinition {
   homepagePath?: string;
   geography: ArmeniaSourceGeography;
   countryCodes: readonly string[];
-  languages: readonly ('hy' | 'ru' | 'en')[];
+  languages: readonly ArmeniaContentLanguage[];
   domains: readonly ArmeniaSignalDomain[];
   provenance: ArmeniaSourceProvenance;
   verificationPolicy: ArmeniaVerificationPolicy;
@@ -64,9 +67,10 @@ export interface ArmeniaEventEvidence {
   sourceName: string;
   url: string;
   publishedAt?: string;
+  discoveredAt?: string;
   observedAt: string;
   title?: string;
-  language?: 'hy' | 'ru' | 'en';
+  language?: ArmeniaDetectedLanguage;
   isPrimaryRecord: boolean;
 }
 
@@ -116,9 +120,12 @@ export interface ArmeniaContentEvidence {
   url: string;
   title: string;
   publishedAt?: string;
+  discoveredAt?: string;
   observedAt: string;
   transport: ArmeniaContentTransport;
   provenance: ArmeniaSourceProvenance;
+  language: ArmeniaDetectedLanguage;
+  publishedAtVerified: boolean;
   isPrimaryRecord: boolean;
 }
 
@@ -130,11 +137,24 @@ export interface ArmeniaContentSignal {
   sourceId: string;
   sourceName: string;
   publishedAt?: string;
+  discoveredAt?: string;
   observedAt: string;
+  language: ArmeniaDetectedLanguage;
+  publishedAtVerified: boolean;
   primaryDomain: ArmeniaSignalDomain;
   domains: readonly ArmeniaSignalDomain[];
   scope: ArmeniaEventScope;
+  /**
+   * How confidently the story is Armenia-relevant. This is a gate/diagnostic,
+   * not the editorial ordering score shown to users.
+   */
   relevanceScore: number;
+  /** Decision impact / importance score used for ranking cards. */
+  importanceScore: number;
+  /** Recency score, with unverified Google discovery dates deliberately capped. */
+  freshnessScore: number;
+  /** Content-quality score after static-page / junk-title checks. */
+  qualityScore: number;
   relevanceReasons: readonly ArmeniaContentRelevanceReason[];
   urgency: ArmeniaSignalUrgency;
   provenance: ArmeniaSourceProvenance;
@@ -145,6 +165,7 @@ export interface ArmeniaContentSignal {
 
 export interface ArmeniaContentSnapshot {
   version: 1;
+  language: ArmeniaContentLanguage;
   generatedAt: string;
   signals: readonly ArmeniaContentSignal[];
   sources: readonly ArmeniaSourceHealth[];
