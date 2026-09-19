@@ -5,10 +5,9 @@ import { rssProxyUrl } from '@/utils';
 /**
  * Canonical publisher URLs retained for source-attribution scanning.
  *
- * Runtime delivery below intentionally uses the already-approved Google News
- * transport, but these publishers are still the editorial sources. Keeping
- * their canonical feed URLs discoverable preserves the existing attribution
- * ledger while direct-host proxy health/allowlisting is handled separately.
+ * Runtime delivery below uses the already-approved news.google.com transport,
+ * while these canonical URLs continue to describe the editorial publishers in
+ * the attribution inventory.
  */
 export const ARMENIA_SOURCE_ATTRIBUTION_URLS = [
   'https://hetq.am/hy/rss',
@@ -16,19 +15,23 @@ export const ARMENIA_SOURCE_ATTRIBUTION_URLS = [
   'https://banks.am/am/rss/93',
 ] as const;
 
+/**
+ * Match the Google News locale already used by the repository's known-working
+ * international/site feeds. The site: filter keeps the editorial publisher
+ * Armenia-specific; the Google News locale only controls the transport/search
+ * endpoint and does not rewrite the publisher identity stored on NewsItem.
+ */
 function googleNewsForSite(host: string): string {
   const query = encodeURIComponent(`site:${host} when:7d`);
-  return rssProxyUrl(`https://news.google.com/rss/search?q=${query}&hl=hy&gl=AM&ceid=AM:hy`);
+  return rssProxyUrl(`https://news.google.com/rss/search?q=${query}&hl=en-US&gl=US&ceid=US:en`);
 }
 
 /**
  * Runtime Armenia feed set.
  *
  * The registry is the source of truth for which Armenia sources are live.
- * We intentionally use Google News site discovery for the Armenia brief even
- * when a source also exposes a direct RSS path. That keeps the runtime on the
- * already-approved news.google.com transport while the direct Armenian RSS
- * hosts are being added to the proxy allowlist and health checks.
+ * Feed names remain the canonical Armenia registry names so source activity,
+ * provenance and section fallback logic all key on the same identity.
  */
 const LIVE_ARMENIA_SOURCES = getArmeniaSourcesByReadiness('live')
   .filter((source) => source.geography === 'armenia');
