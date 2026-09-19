@@ -1,4 +1,5 @@
 import type { MapLayers } from '@/types';
+import { safeStorageGet } from '@/utils/safe-storage';
 
 export type ArmeniaMapLanguage = 'hy' | 'ru' | 'en';
 export type ArmeniaMapTimeRange = '1h' | '6h' | '24h' | '48h' | '7d' | 'all';
@@ -92,11 +93,14 @@ const LAYER_LABELS: Record<ArmeniaMapLanguage, Partial<Record<keyof MapLayers, s
 };
 
 export function getArmeniaMapLanguage(): ArmeniaMapLanguage {
+  const stored = safeStorageGet(LANGUAGE_STORAGE_KEY);
+  if (!stored) return 'hy';
   try {
-    const value = localStorage.getItem(LANGUAGE_STORAGE_KEY);
-    if (value === 'hy' || value === 'ru' || value === 'en') return value;
-  } catch { /* Storage can be unavailable in privacy-restricted contexts. */ }
-  return 'hy';
+    const value = JSON.parse(stored) as unknown;
+    return value === 'hy' || value === 'ru' || value === 'en' ? value : 'hy';
+  } catch {
+    return 'hy';
+  }
 }
 
 export function getArmeniaMapUi(language = getArmeniaMapLanguage()) { return UI[language]; }
