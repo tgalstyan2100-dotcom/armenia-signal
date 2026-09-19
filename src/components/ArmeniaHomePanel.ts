@@ -19,6 +19,7 @@ import { ARMENIA_NEWS_SOURCE_NAMES } from '@/config/armenia-feeds';
 import type { NewsItem } from '@/types';
 import { h } from '@/utils/dom-utils';
 import { sanitizeUrl } from '@/utils/sanitize';
+import { safeStorageGet } from '@/utils/safe-storage';
 
 type Copy = {
   panelTitle: string;
@@ -87,8 +88,10 @@ const LANE_CATEGORIES: Record<'economy' | 'security' | 'technology' | 'region', 
 };
 
 function readLanguage(): ArmeniaLanguage {
+  const stored = safeStorageGet(ARMENIA_LANGUAGE_STORAGE_KEY);
+  if (!stored) return 'hy';
   try {
-    const parsed = JSON.parse(localStorage.getItem(ARMENIA_LANGUAGE_STORAGE_KEY) ?? '"hy"');
+    const parsed = JSON.parse(stored) as unknown;
     return isArmeniaLanguage(parsed) ? parsed : 'hy';
   } catch {
     return 'hy';
@@ -96,8 +99,10 @@ function readLanguage(): ArmeniaLanguage {
 }
 
 function readSection(): ArmeniaSectionId {
+  const stored = safeStorageGet(ARMENIA_SECTION_STORAGE_KEY);
+  if (!stored) return 'home';
   try {
-    const parsed = JSON.parse(localStorage.getItem(ARMENIA_SECTION_STORAGE_KEY) ?? '"home"');
+    const parsed = JSON.parse(stored) as unknown;
     return isArmeniaSectionId(parsed) ? parsed : 'home';
   } catch {
     return 'home';
