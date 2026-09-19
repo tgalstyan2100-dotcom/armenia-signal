@@ -85,7 +85,12 @@ async function fetchText(url: string, init: RequestInit = {}): Promise<string> {
 
 function numberFrom(text: string | undefined): number | null {
   if (!text) return null;
-  const parsed = Number(text.replace(/,/g, '').trim());
+  const normalized = text
+    .replace(/\u2024/g, '.')
+    .replace(/\u0589/g, '.')
+    .replace(/,/g, '')
+    .trim();
+  const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : null;
 }
 
@@ -125,6 +130,20 @@ function regexNumber(text: string, patterns: readonly RegExp[]): number | null {
     if (value != null) return value;
   }
   return null;
+}
+
+const PERCENT_NUMBER = '[+-]?[0-9]+(?:[.\\u2024\\u0589][0-9]+)?';
+
+function metricAroundLabel(
+  text: string,
+  labelPattern: string,
+  options: { allowTrailingParenthetical?: boolean } = {},
+): number | null {
+  const trailing = options.allowTrailingParenthetical ? '(?:\\s*\\([^)]*\\))?' : '';
+  return regexNumber(text, [
+    new RegExp(`(${PERCENT_NUMBER})\\s*%\\s*${labelPattern}${trailing}`, 'i'),
+    new RegExp(`${labelPattern}${trailing}\\s*(${PERCENT_NUMBER})\\s*%`, 'i'),
+  ]);
 }
 
 async function collectCba(): Promise<{ indicators: ArmeniaIndicator[]; health: ArmeniaIndicatorSourceHealth }> {
@@ -177,42 +196,82 @@ async function collectCba(): Promise<{ indicators: ArmeniaIndicator[]; health: A
 
   try {
     const page = htmlText(await fetchText(URLS.cbaHome));
-    const policyRate = regexNumber(page, [
-      /Policy\s+Rate\s*([0-9]+(?:\.[0-9]+)?)\s*%/i,
-      /Refinancing\s+Rate\s*([0-9]+(?:\.[0-9]+)?)\s*%/i,
-    ]);
-    const inflation = regexNumber(page, [
-      /Annual\s+Inflation\s*([0-9]+(?:\.[0-9]+)?)\s*%/i,
-      /Inflation\s*([0-9]+(?:\.[0-9]+)?)\s*%/i,
-    ]);
-    const creditGap = regexNumber(page, [
-      /Credit\s*\/\s*GDP\s+gap\s*([+-]?[0-9]+(?:\.[0-9]+)?)\s*%/i,
-    ]);
-    const buffer = regexNumber(page, [
-      /Countercyclical(?:\s+capital)?\s+buffer\s*([0-9]+(?:\.[0-9]+)?)\s*%/i,
-      /Countercyclical\s+buffer\s*([0-9]+(?:\.[0-9]+)?)\s*%/i,
-    ]);
+
+    // CBA homepage renders KPI values BEFORE their labels:
+    // "6.75% Policy Rate 4.4% Annual Inflation (August 2026) ..."
+    // The old parser only supported "Label -> value", which shifted the data
+    // and incorrectly reported 4.4% as the policy rate.
+    const policyRate = metricAroundLabel(page, 'Policy\\s+Rate')
+      ?? metricAroundLabel(page, 'Refinancing\\s+Rate');
+
+    const inflation = metricAroundLabel(
+      page,
+      'Annual\\s+Inflation',
+      { allowTrailingParenthetical: true },
+    ) ?? metricAroundLabel(
+      page,
+      'Inflation',
+      { allowTrailingParenthetical: true },
+    );
+
+    const creditGap = metricAroundLabel(
+      page,
+      'Credit\\s*\\/\\s*GDP\\s+gap',
+      { allowTrailingParenthetical: true },
+    );
+
+    const buffer = metricAroundLabel(
+      page,
+      'Countercyclical(?:\\s+capital)?\\s+buffer',
+      { allowTrailingParenthetical: true },
+    );
 
     if (policyRate != null) indicators.push(liveIndicator({
-      id: 'policy-rate', domain: 'macro', value: policyRate, unit: '%', sourceName: 'Central Bank of Armenia', sourceUrl: URLS.cbaHome,
+      id: 'policy-rate',
+      domain: 'macro',
+      value: policyRate,
+      unit: '%',
+      sourceName: 'Central Bank of Armenia',
+      sourceUrl: URLS.cbaHome,
     }));
     if (inflation != null) indicators.push(liveIndicator({
-      id: 'annual-inflation', domain: 'macro', value: inflation, unit: '%', sourceName: 'Central Bank of Armenia', sourceUrl: URLS.cbaHome,
+      id: 'annual-inflation',
+      domain: 'macro',
+      value: inflation,
+      unit: '%',
+      sourceName: 'Central Bank of Armenia',
+      sourceUrl: URLS.cbaHome,
     }));
     if (creditGap != null) indicators.push(liveIndicator({
-      id: 'credit-gdp-gap', domain: 'banking', value: creditGap, unit: '%', sourceName: 'Central Bank of Armenia', sourceUrl: URLS.cbaHome,
+      id: 'credit-gdp-gap',
+      domain: 'banking',
+      value: creditGap,
+      unit: '%',
+      sourceName: 'Central Bank of Armenia',
+      sourceUrl: URLS.cbaHome,
     }));
     if (buffer != null) indicators.push(liveIndicator({
-      id: 'countercyclical-buffer', domain: 'banking', value: buffer, unit: '%', sourceName: 'Central Bank of Armenia', sourceUrl: URLS.cbaHome,
+      id: 'countercyclical-buffer',
+      domain: 'banking',
+      value: buffer,
+      unit: '%',
+      sourceName: 'Central Bank of Armenia',
+      sourceUrl: URLS.cbaHome,
     }));
   } catch (error) {
     homepageError = error instanceof FetchFailure ? error.code : 'parse';
   }
 
-  const state = indicators.length >= 5 ? 'healthy' : indicators.length > 0 ? 'degraded' : 'unavailable';
+  const state = indicators.length >= 7 ? 'healthy' : indicators.length > 0 ? 'degraded' : 'unavailable';
   return {
     indicators,
-    health: health('cba', 'Central Bank of Armenia', state, indicators.length, state === 'unavailable' ? (ratesError ?? homepageError ?? 'empty') : undefined),
+    health: health(
+      'cba',
+      'Central Bank of Armenia',
+      state,
+      indicators.length,
+      state === 'unavailable' ? (ratesError ?? homepageError ?? 'empty') : undefined,
+    ),
   };
 }
 
@@ -244,8 +303,6 @@ function selectionForVariable(variable: PxVariable, mode: PxMode): { filter: 'it
     return { filter: 'item', values: [values[index]!] };
   }
 
-  // Keep otherwise-unrelated dimensions narrow rather than requesting a large
-  // cube and accidentally reading the wrong flattened series.
   return { filter: 'item', values: [values[0]!] };
 }
 
@@ -291,12 +348,13 @@ async function collectArmstat(): Promise<{ indicators: ArmeniaIndicator[]; healt
   let lastError: ErrorCode | undefined;
   try {
     const cpi = await queryPxWeb(URLS.armstatCpi, 'cpi-yoy');
-    // The monthly CPI table is usually an index where 100 = no year-on-year
-    // change. Convert index-style output to a readable percentage only when it
-    // falls in a plausible index range; otherwise preserve the returned value.
     const value = cpi.value > 70 && cpi.value < 140 ? Number((cpi.value - 100).toFixed(1)) : Number(cpi.value.toFixed(1));
     indicators.push(liveIndicator({
-      id: 'cpi-yoy', domain: 'macro', value, unit: '%', ...(cpi.period ? { period: cpi.period } : {}),
+      id: 'cpi-yoy',
+      domain: 'macro',
+      value,
+      unit: '%',
+      ...(cpi.period ? { period: cpi.period } : {}),
       sourceName: 'Statistical Committee of Armenia',
       sourceUrl: 'https://statbank.armstat.am/',
       note: 'Latest available CPI series value from ArmStatBank.',
@@ -309,8 +367,13 @@ async function collectArmstat(): Promise<{ indicators: ArmeniaIndicator[]; healt
     const activity = await queryPxWeb(URLS.armstatActivity, 'economic-activity-yoy');
     const value = activity.value > 70 && activity.value < 140 ? Number((activity.value - 100).toFixed(1)) : Number(activity.value.toFixed(1));
     indicators.push(liveIndicator({
-      id: 'economic-activity-yoy', domain: 'macro', value, unit: '%', ...(activity.period ? { period: activity.period } : {}),
-      sourceName: 'Statistical Committee of Armenia', sourceUrl: 'https://statbank.armstat.am/',
+      id: 'economic-activity-yoy',
+      domain: 'macro',
+      value,
+      unit: '%',
+      ...(activity.period ? { period: activity.period } : {}),
+      sourceName: 'Statistical Committee of Armenia',
+      sourceUrl: 'https://statbank.armstat.am/',
       note: 'Latest available national accounts/economic activity series value from ArmStatBank.',
     }));
   } catch (error) {
@@ -318,7 +381,16 @@ async function collectArmstat(): Promise<{ indicators: ArmeniaIndicator[]; healt
   }
 
   const state = indicators.length === 2 ? 'healthy' : indicators.length > 0 ? 'degraded' : 'unavailable';
-  return { indicators, health: health('armstat', 'Statistical Committee of Armenia', state, indicators.length, state === 'unavailable' ? (lastError ?? 'empty') : undefined) };
+  return {
+    indicators,
+    health: health(
+      'armstat',
+      'Statistical Committee of Armenia',
+      state,
+      indicators.length,
+      state === 'unavailable' ? (lastError ?? 'empty') : undefined,
+    ),
+  };
 }
 
 async function collectAmx(): Promise<{ indicators: ArmeniaIndicator[]; health: ArmeniaIndicatorSourceHealth }> {
@@ -333,15 +405,22 @@ async function collectAmx(): Promise<{ indicators: ArmeniaIndicator[]; health: A
     const dateRaw = text.match(/Data\s+as\s+of\s+([0-9]{1,2}[./-][0-9]{1,2}[./-][0-9]{4})/i)?.[1];
     const parsedDate = dateRaw ? parseIsoDate(dateRaw.split(/[.\/-]/).reverse().join('-')) : undefined;
     const indicator = liveIndicator({
-      id: 'amx-corporate-bond-index', domain: 'market', value, unit: 'index',
+      id: 'amx-corporate-bond-index',
+      domain: 'market',
+      value,
+      unit: 'index',
       ...(change != null ? { change, changeUnit: 'percent' as const } : {}),
       ...(parsedDate ? { updatedAt: parsedDate } : {}),
-      sourceName: 'Armenia Securities Exchange', sourceUrl: URLS.amx,
+      sourceName: 'Armenia Securities Exchange',
+      sourceUrl: URLS.amx,
     });
     return { indicators: [indicator], health: health('amx', 'Armenia Securities Exchange', 'healthy', 1) };
   } catch (error) {
     const code = error instanceof FetchFailure ? error.code : 'parse';
-    return { indicators: [], health: health('amx', 'Armenia Securities Exchange', 'unavailable', 0, code) };
+    return {
+      indicators: [],
+      health: health('amx', 'Armenia Securities Exchange', 'unavailable', 0, code),
+    };
   }
 }
 
@@ -351,14 +430,25 @@ async function collectPsrc(): Promise<{ indicators: ArmeniaIndicator[]; health: 
     const unchanged = /կմնան\s+անփոփոխ|remain(?:s|ed)?\s+unchanged|без\s+изменен/iu.test(text);
     if (!unchanged) throw new FetchFailure('parse', 'Tariff status phrase not found');
     const indicator = liveIndicator({
-      id: 'electricity-tariff-status', domain: 'energy', value: 'unchanged', unit: 'status', period: '2026',
-      sourceName: 'Public Services Regulatory Commission of Armenia', sourceUrl: URLS.psrc,
+      id: 'electricity-tariff-status',
+      domain: 'energy',
+      value: 'unchanged',
+      unit: 'status',
+      period: '2026',
+      sourceName: 'Public Services Regulatory Commission of Armenia',
+      sourceUrl: URLS.psrc,
       note: 'Consumer electricity tariffs for 2026 are reported unchanged by the regulator.',
     });
-    return { indicators: [indicator], health: health('psrc', 'Public Services Regulatory Commission of Armenia', 'healthy', 1) };
+    return {
+      indicators: [indicator],
+      health: health('psrc', 'Public Services Regulatory Commission of Armenia', 'healthy', 1),
+    };
   } catch (error) {
     const code = error instanceof FetchFailure ? error.code : 'parse';
-    return { indicators: [], health: health('psrc', 'Public Services Regulatory Commission of Armenia', 'unavailable', 0, code) };
+    return {
+      indicators: [],
+      health: health('psrc', 'Public Services Regulatory Commission of Armenia', 'unavailable', 0, code),
+    };
   }
 }
 
